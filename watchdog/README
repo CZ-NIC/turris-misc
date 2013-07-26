@@ -1,0 +1,12 @@
+The watchdog script
+===================
+
+A simple script that is expected to be run periodically in a short interval
+(once every few minutes, for example, usually from cron) to check that a set of
+daemons is alive.
+
+If a daemon listed as required is missing two times in a row, the corresponding
+service (in /etc/init.d) is restarted. It is not restarted the first time,
+since it might be shut down for upgrade, for example.
+
+The list of daemons is at the top of the script.
