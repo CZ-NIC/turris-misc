@@ -6,6 +6,8 @@ set -ex
 SERVICES="ucollect"
 TEMPFILE=/tmp/watchdog.tmp.$$
 
+trap 'rm "$TEMPFILE"' EXIT INT QUIT TERM
+
 # Grap current list of processes, strip off the header and keep only the first and last column.
 # Seems like our ps doesn't know how to specify format, so we have to get through the
 # human-friendly crap
@@ -33,5 +35,3 @@ for SERVICE in $SERVICES ; do
 		fi
 	fi
 done
-
-rm "$TEMPFILE"
