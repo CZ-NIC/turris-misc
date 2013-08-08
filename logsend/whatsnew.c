@@ -13,7 +13,7 @@ static const char *read_line() {
 	size_t buf_size = 10;
 	size_t pos = 0;
 	char *result = malloc(buf_size + 1);
-	while (fgets(result + pos, buf_size, stdin)) {
+	while (fgets(result + pos, buf_size - pos, stdin)) {
 		size_t len = strlen(result + pos);
 		if (result[pos + len - 1] == '\n')
 			return result;
