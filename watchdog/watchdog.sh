@@ -24,8 +24,11 @@ for SERVICE in $SERVICES ; do
 	else
 		if test -f "$FILE" ; then
 			# It is not there and was not there the previous time. Restart.
-			/etc/init.d/"$SERVICE" restart
-			echo "Restarted $SERVICE" | logger -t watchdog -p daemon.warn
+			if /etc/init.d/"$SERVICE" restart ; then
+				echo "Restarted $SERVICE" | logger -t watchdog -p daemon.warn
+			else
+				echo "Failed to restart $SERVICE" | logger -t watchdog -p daemon.err
+			fi
 			rm -f "$FILE"
 		else
 			# It was here previously, but it is not here now. Note it is
