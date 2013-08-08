@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 
-const char *read_line() {
+static const char *read_line() {
 	size_t buf_size = 10;
 	size_t pos = 0;
 	char *result = malloc(buf_size + 1);
@@ -23,7 +23,7 @@ const char *read_line() {
 	return pos ? result : NULL;
 }
 
-const char *const *read_lines() {
+static const char *const *read_lines() {
 	size_t size = 0, allocated = 0;
 	const char **result = NULL;
 	do {
@@ -33,12 +33,21 @@ const char *const *read_lines() {
 	return result;
 }
 
-void dump_lines(const char *const *lines) {
+static const char *seen = NULL;
+
+static void dump_lines(const char *const *lines) {
 	while (*lines)
-		fputs(*lines ++, stdout);
+		fputs(seen = *lines ++, stdout);
 }
 
-uint8_t last[SHA_DIGEST_LENGTH] = {0};
+static uint8_t last[SHA_DIGEST_LENGTH] = {0};
+
+static void sha(const char *line, uint8_t *buffer) {
+	SHA_CTX context;
+	SHA1_Init(&context);
+	SHA1_Update(&context, line, strlen(line));
+	SHA1_Final(buffer, &context);
+}
 
 int main(int argc, const char *argv[]) {
 	if (!argv[1]) {
@@ -64,7 +73,17 @@ int main(int argc, const char *argv[]) {
 		close(cache);
 	}
 	const char *const *lines = read_lines();
+	for (const char *const *current = lines; *current; current ++) {
+		static uint8_t buffer[SHA_DIGEST_LENGTH];
+		sha(*current, buffer);
+		if (memcmp(buffer, last, SHA_DIGEST_LENGTH) == 0) {
+			lines = current + 1;
+			break;
+		}
+	}
 	dump_lines(lines);
+	if (seen)
+		sha(seen, last);
 	cache = open(argv[1], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 	if (cache == -1) {
 		perror("Can't open cache for write:");
