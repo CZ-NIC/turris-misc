@@ -9,6 +9,22 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 
+/*
+ * Purpose of this program:
+ * This is similar to cat in that it reads lines from standard input
+ * and writes them to standard output. However, it remembers what was
+ * already read last time (in provided cache file) and skips that.
+ *
+ * It is done by remembering the sha1 hash of the last line of output.
+ */
+
+/*
+ * These two function read the whole input and produce array of strings.
+ * The array is terminated by NULL.
+ *
+ * Note: we don't free the allocated memory here. As we terminate right
+ * after writing the data out, there's no need.
+ */
 static const char *read_line() {
 	size_t buf_size = 10;
 	size_t pos = 0;
