@@ -1,0 +1,16 @@
+The log sender
+==============
+
+This utility collects logs for the syslog buffer, filters them for the output
+of just the relevant daemons and uploads them to the server.
+
+It is expected the `logsend.sh` will be run periodically on each of the
+routers. The `logsend.cron` file can be used for that.
+
+The `whatsnew` is a tool that remembers what lines of the log were already sent
+and filters them out, so they are sent only once.
+
+The `upload.cgi` is a script that sits on the server and concatenates the logs
+from the clients. It does not do any kind of authentication. It is expected
+that the web server will be configured to at least restrict the access to the
+ones inside the VPN.
