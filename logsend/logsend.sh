@@ -11,5 +11,6 @@ RID=12345
 
 # Grep regexp: Month date time hostname something.something daemon
 logread | \
+	/usr/bin/whatsnew /tmp/logs.last.sha1 | \
 	grep "^[^ ][^ ]*  *[0-9][0-9]*  *[0-9:][0-9:]* [^ ][^ ]* [a-z][a-z]*\.[a-z][a-z]* \($DAEMONS\)\(\[[0-9]*\]\|\):" | \
 	curl -T - "$BASEURL$RID" -X POST
