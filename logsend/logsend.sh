@@ -6,8 +6,7 @@
 DAEMONS='ucollect\|updater\|watchdog'
 # Where to put the logs (don't forget the question mark at the end)
 BASEURL='http://securt-test.labs.nic.cz/logsend/upload.cgi?'
-# TODO: Get the router ID
-RID=12345
+RID="$(atsha204cmd serial-number)"
 
 # Grep regexp: Month date time hostname something.something daemon
 logread | \
