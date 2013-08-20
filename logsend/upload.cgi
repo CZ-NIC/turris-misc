@@ -6,7 +6,7 @@ LOGDIR=/var/log/routers/
 
 CLIENT_ID="$QUERY_STRING"
 # Some little validation
-if "$REQUEST_METHOD" != "POST" ; then
+if [ "$REQUEST_METHOD" != "POST" ] ; then
 	echo 'Status: 501 Not Implemented'
 	echo
 	exit
