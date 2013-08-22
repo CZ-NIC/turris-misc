@@ -5,7 +5,7 @@
 # List of daemon names. Separate by \|, it's put into the regular expression.
 DAEMONS='ucollect\|updater\|watchdog'
 # Where to put the logs (don't forget the question mark at the end)
-BASEURL='https://securt-test.labs.nic.cz/logsend/upload.cgi?'
+BASEURL='https://test-dev.securt.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
 # FIXME: Testing certificate just for now.
 CERT="/etc/ssl/vorner.pem"
