@@ -8,6 +8,8 @@
 #define SNAPSHOT_COUNT 100
 #define SLEEP_TIME_USEC 3000000
 #define SNIFF_FILE_NET "/proc/net/dev"
+#define OUTPUT_FILE "/tmp/nethist.tmp"
+#define FINAL_FILE "/tmp/nethist"
 
 #define MAX_LEN_INTERFACE_NAME 20
 #define MAX_LEN_INTERFACE_LIST 20
@@ -161,7 +163,13 @@ int main(int argc, char **argv) {
 
 		take_snapshot(&(snapshots[write_to]));
 
-		print_history(stdout, snapshots, write_to);
+		FILE *fout = fopen(OUTPUT_FILE, "w+");
+		if (fout == NULL) {
+			return 1;
+		}
+		print_history(fout, snapshots, write_to);
+		fclose(fout);
+		rename(OUTPUT_FILE, FINAL_FILE);
 
 		write_to++;
 
