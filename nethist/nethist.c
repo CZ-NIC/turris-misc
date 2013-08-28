@@ -3,11 +3,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <time.h>
 
 #define BUFFSIZE 512
-#define SNAPSHOT_COUNT 100
+#define SNAPSHOT_COUNT 80
 #define SLEEP_TIME_USEC 3000000
 #define SNIFF_FILE_NET "/proc/net/dev"
+#define SNIFF_FILE_CPU "/proc/loadavg"
+#define SNIFF_FILE_MEM "/proc/meminfo"
 #define OUTPUT_FILE "/tmp/nethist.tmp"
 #define FINAL_FILE "/tmp/nethist"
 
@@ -26,16 +30,30 @@ typedef struct {
 configuration g_config;
 
 struct newtwork_interface_data {
-	unsigned long long r_bytes;
-	unsigned long long t_bytes;
+	unsigned long long int r_bytes;
+	unsigned long long int t_bytes;
 };
 
 struct network_snapshot {
 	struct newtwork_interface_data interface[MAX_LEN_INTERFACE_LIST];
 };
 
+struct cpu_snapshot {
+	float load;
+};
+
+struct memory_snapshot {
+	unsigned long long int memtotal;
+	unsigned long long int memfree;
+	unsigned long long int buffers;
+	unsigned long long int cached;
+};
+
 typedef struct {
+	unsigned long long int timestamp;
 	struct network_snapshot network;
+	struct cpu_snapshot cpu;
+	struct memory_snapshot memory;
 	//struct cpu_snapshot cpu; //etc. etc.
 } snapshot;
 
@@ -44,6 +62,17 @@ static void network_init_snapshot(struct network_snapshot *snapshot) {
 		snapshot->interface[i].r_bytes = 0;
 		snapshot->interface[i].t_bytes = 0;
 	}
+}
+
+static void cpu_init_snapshot(struct cpu_snapshot *snapshot) {
+		snapshot->load = 0;
+}
+
+static void memory_init_snapshot(struct memory_snapshot *snapshot) {
+		snapshot->memtotal = 0;
+		snapshot->memfree = 0;
+		snapshot->cached = 0;
+		snapshot->buffers = 0;
 }
 
 static size_t network_get_interface_number(char *name) {
@@ -58,6 +87,8 @@ static size_t network_get_interface_number(char *name) {
 
 static bool network_init_global() {
 	char buffer[BUFFSIZE];
+	char name[MAX_LEN_INTERFACE_NAME];
+	size_t newlen;
 	FILE *f = fopen(SNIFF_FILE_NET, "r");
 	if (f == NULL) return false;
 
@@ -71,7 +102,10 @@ static bool network_init_global() {
 	g_config.network.interfaces_cnt = 0;
 
 	while (fgets(buffer, BUFFSIZE, f) != NULL) {
-		sscanf(buffer, "%20s", g_config.network.interfaces[g_config.network.interfaces_cnt++]);
+		sscanf(buffer, "%20s", name);
+		newlen = strlen(name) - 1;
+		name[newlen] = '\0';
+		memcpy(g_config.network.interfaces[g_config.network.interfaces_cnt++], name, newlen);
 	}
 
 	fclose(f);
@@ -102,9 +136,10 @@ static bool network_take_snapshot(struct network_snapshot *snap) {
 			&dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy
 		);
 
+		name[strlen(name)-1] = '\0';
+
 		pos = network_get_interface_number(name);
 		if (pos == g_config.network.interfaces_cnt) {
-			printf("INTERRUPT\n");
 			exit(1);
 		}
 
@@ -117,29 +152,112 @@ static bool network_take_snapshot(struct network_snapshot *snap) {
 	return true;
 }
 
+static bool cpu_take_snapshot(struct cpu_snapshot *snap) {
+	FILE *f = fopen(SNIFF_FILE_CPU, "r");
+	if (f == NULL) return false;
+
+	if (fscanf(f, "%f", &snap->load) != 1) {
+		fclose(f);
+		return false;
+	}
+
+	fclose(f);
+	return true;
+}
+
+static bool memory_take_snapshot(struct memory_snapshot *snap) {
+	char buffer[BUFFSIZE];
+	char dummy[64];
+	FILE *f = fopen(SNIFF_FILE_MEM, "r");
+	if (f == NULL) return false;
+
+	//Get MemTotal
+	if (fgets(buffer, BUFFSIZE, f) == NULL) {
+		fclose(f);
+		return false;
+	}
+
+	if (sscanf(buffer, "%s%llu", dummy, &snap->memtotal) != 2) {
+		fclose(f);
+		return false;
+	}
+
+	//Get MemFree
+	if (fgets(buffer, BUFFSIZE, f) == NULL) {
+		fclose(f);
+		return false;
+	}
+
+	if (sscanf(buffer, "%s%llu", dummy, &snap->memfree) != 2) {
+		fclose(f);
+		return false;
+	}
+
+	//Get Buffers
+	if (fgets(buffer, BUFFSIZE, f) == NULL) {
+		fclose(f);
+		return false;
+	}
+
+	if (sscanf(buffer, "%s%llu", dummy, &snap->buffers) != 2) {
+		fclose(f);
+		return false;
+	}
+
+	//Get Cached
+	if (fgets(buffer, BUFFSIZE, f) == NULL) {
+		fclose(f);
+		return false;
+	}
+
+	if (sscanf(buffer, "%s%llu", dummy, &snap->cached) != 2) {
+		fclose(f);
+		return false;
+	}
+
+	fclose(f);
+	return true;
+}
+
 static void init(snapshot *snapshots) {
 	for (size_t i = 0; i < SNAPSHOT_COUNT; i++) {
+		snapshots[i].timestamp = 0;
 		network_init_snapshot(&(snapshots[i].network));
+		cpu_init_snapshot(&(snapshots[i].cpu));
+		memory_init_snapshot(&(snapshots[i].memory));
 	}
 
 	network_init_global();
 }
 
 static void take_snapshot(snapshot *snap) {
+	snap->timestamp = (unsigned long long)time(NULL);
 	network_take_snapshot(&(snap->network));
+	cpu_take_snapshot(&(snap->cpu));
+	memory_take_snapshot(&(snap->memory));
 }
 
-static void network_print_history(FILE *stream, int time, struct network_snapshot *snap) {
+static void network_print_history(FILE *stream, unsigned long long int time, struct network_snapshot *snap) {
 	for (size_t i = 0; i < g_config.network.interfaces_cnt; i++) {
-		fprintf(stream, "%d,%s,%llu,%llu\n", time, g_config.network.interfaces[i], snap->interface[i].r_bytes, snap->interface[i].t_bytes);
+		fprintf(stream, "%llu,%s,%s,%llu,%llu\n", time, "network", g_config.network.interfaces[i], snap->interface[i].r_bytes, snap->interface[i].t_bytes);
 	}
+}
+
+static void cpu_print_history(FILE *stream, unsigned long long int time, struct cpu_snapshot *snap) {
+	fprintf(stream, "%llu,%s,%f\n", time, "cpu", snap->load);
+}
+
+static void memory_print_history(FILE *stream, unsigned long long int time, struct memory_snapshot *snap) {
+	fprintf(stream, "%llu,%s,%llu,%llu,%llu,%llu\n", time, "memory", snap->memtotal, snap->memfree, snap->buffers, snap->cached);
 }
 
 static void print_history(FILE *stream, snapshot *snapshots, size_t from) {
 	size_t pos = from;
 
 	for (int i = 0; i < SNAPSHOT_COUNT; i++) {
-		network_print_history(stream, i, &(snapshots[pos].network));
+		network_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].network));
+		cpu_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].cpu));
+		memory_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].memory));
 		pos = (pos + 1) % SNAPSHOT_COUNT;
 	}
 
@@ -167,7 +285,9 @@ int main(int argc, char **argv) {
 		if (fout == NULL) {
 			return 1;
 		}
-		print_history(fout, snapshots, write_to);
+
+		print_history(fout, snapshots, write_to+1);
+
 		fclose(fout);
 		rename(OUTPUT_FILE, FINAL_FILE);
 
