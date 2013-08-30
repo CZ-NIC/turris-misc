@@ -1,12 +1,9 @@
-BIN=nethist
-SRC=nethist.c
-CC=gcc
-FLAGS=-Wall -Wextra -pedantic -std=gnu99 -O0 -g
-LIBS=
+BIN:=nethist
+all: $(BIN)
 
-$(BIN): $(SRC)
-	$(CC) $(FLAGS) $(LIBS) -o $(BIN) $(SRC)
+CFLAGS=-Wall -Wextra -pedantic -std=gnu99 -O0 -g
 
 clean:
-	rm $(BIN)
+	rm -f $(BIN)
 
+.PHONY: clean all
