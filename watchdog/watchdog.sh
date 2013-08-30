@@ -3,7 +3,7 @@
 set -ex
 
 # Configuration
-SERVICES="ucollect"
+SERVICES="ucollect nethist"
 TEMPFILE=/tmp/watchdog.tmp.$$
 
 trap 'rm "$TEMPFILE"' EXIT INT QUIT TERM
