@@ -140,7 +140,10 @@ static bool network_take_snapshot(struct network_snapshot *snap) {
 
 		pos = network_get_interface_number(name);
 		if (pos == g_config.network.interfaces_cnt) {
-			exit(1);
+			if (execlp ("nethist", "nethist", NULL) == -1) {
+				//OK, it isn't working, the dogwatch is going to does dirty work
+				exit(1);
+			}
 		}
 
 		snap->interface[pos].r_bytes = r_bytes;
