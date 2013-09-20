@@ -8,6 +8,7 @@ DAEMONS='ucollect\|updater\|watchdog'
 BASEURL='https://test-dev.securt.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
 # FIXME: Testing certificate just for now.
+# Switch to DANE when supported (#2703)
 CERT="/etc/ssl/vorner.pem"
 
 # Don't load the server all at once. With NTP-synchronized time, and
