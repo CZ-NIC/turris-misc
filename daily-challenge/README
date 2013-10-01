@@ -1,0 +1,6 @@
+Just a CGI script that produces a different challenge every day. The challenge
+is based on the date, but others should not be able to generate them because of
+a salt.
+
+Simply place it somewhere on public web and set the salt (and comment the exit
+1 there).
