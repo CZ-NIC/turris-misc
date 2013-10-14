@@ -22,5 +22,5 @@ sleep $(( $(tr -cd 0-9 </dev/urandom | head -c 8) % 120 ))
 	cat /var/log/messages
 ) | \
 	/usr/bin/whatsnew /tmp/logs.last.sha1 | \
-	grep "^[^ ][^ ]*  *[0-9][0-9]*  *[0-9:][0-9:]* [a-z][a-z]*  *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
+	grep "^[^ ][^ ]*  *[0-9][0-9]*  *[0-9:][0-9:]* [^ ][^ ]*  *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
 	curl --cacert "$CERT" -T - "$BASEURL$RID" -X POST
