@@ -6,11 +6,9 @@ set -ex
 # List of daemon names. Separate by \|, it's put into the regular expression.
 DAEMONS='ucollect\|updater\|watchdog'
 # Where to put the logs (don't forget the question mark at the end)
-BASEURL='https://test-dev.securt.cz/logsend/upload.cgi?'
+BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
-# FIXME: Testing certificate just for now.
-# Switch to DANE when supported (#2703)
-CERT="/etc/ssl/vorner.pem"
+CERT="/etc/ssl/api.turris.pem"
 TMPFILE="/tmp/logsend.tmp"
 trap 'rm -f "$TMPFILE"' EXIT
 
