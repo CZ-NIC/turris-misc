@@ -8,7 +8,7 @@ DAEMONS='ucollect\|updater\|watchdog'
 # Where to put the logs (don't forget the question mark at the end)
 BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
-CERT="/etc/ssl/api.turris.pem"
+CERT="/etc/ssl/startcom.pem"
 TMPFILE="/tmp/logsend.tmp"
 trap 'rm -f "$TMPFILE"' EXIT
 
