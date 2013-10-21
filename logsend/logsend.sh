@@ -4,7 +4,7 @@
 set -ex
 
 # List of daemon names. Separate by \|, it's put into the regular expression.
-DAEMONS='ucollect\|updater\|watchdog'
+DAEMONS='ucollect\|updater\|watchdog\|oneshot'
 # Where to put the logs (don't forget the question mark at the end)
 BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
