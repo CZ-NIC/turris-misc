@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/busybox sh
 
 set -ex
 
@@ -12,7 +12,8 @@ ls "$SCRIPT_DIR" | sort | while read SCRIPT ; do
 		echo "Running one-shot script $SCRIPT" | logger -t oneshot -p user.info
 		if ! "$SCRIPT_DIR/$SCRIPT" ; then
 			echo "Failed to execute $SCRIPT" | logger -t oneshot -p user.err
-			exit 1
+			# Busybox's sh doesn't work well with exit. Use this instead.
+			kill -SIGABRT $$
 		fi
 		touch "$COMPLETED_DIR/$SCRIPT"
 		echo "Script $SCRIPT comlete" | logger -t oneshot -p user.info
