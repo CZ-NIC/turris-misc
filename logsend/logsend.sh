@@ -10,7 +10,8 @@ BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
 CERT="/etc/ssl/startcom.pem"
 TMPFILE="/tmp/logsend.tmp"
-trap 'rm -f "$TMPFILE"' EXIT
+BUFFER="/tmp/logsend.buffer"
+trap 'rm -f "$TMPFILE" "$BUFFER"' EXIT ABRT QUIT TERM
 
 # Don't load the server all at once. With NTP-synchronized time, and
 # thousand clients, it would make spikes on the CPU graph and that's not
@@ -25,7 +26,11 @@ cp /tmp/logs.last.sha1 "$TMPFILE" || true
 	cat /var/log/messages
 ) | \
 	/usr/bin/whatsnew /tmp/logs.last.sha1 | \
-	grep "^[^ ][^ ]* *[a-z][a-z]* *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
-	tail -n 10000 | \
-	curl --compress --cacert "$CERT" -T - "$BASEURL$RID" -X POST
+	GREP "^[^ ][^ ]* *[a-z][a-z]* *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
+	tail -n 10000 >"$BUFFER"
+
+(
+	atsha204cmd file-challenge-response <"$BUFFER"
+	cat "$BUFFER"
+) | curl --compress --cacert "$CERT" -T - "$BASEURL$RID" -X POST
 mv "$TMPFILE" /tmp/logs.last.sha1
