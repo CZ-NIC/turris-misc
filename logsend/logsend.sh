@@ -25,7 +25,7 @@ cp /tmp/logs.last.sha1 "$TMPFILE" || true
 	cat /var/log/messages
 ) | \
 	/usr/bin/whatsnew /tmp/logs.last.sha1 | \
-	grep "^[^ ][^ ]*  *[0-9][0-9]*  *[0-9:][0-9:]* [^ ][^ ]*  *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
+	grep "^[^ ][^ ]* *[a-z][a-z]* *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
 	tail -n 10000 | \
 	curl --compress --cacert "$CERT" -T - "$BASEURL$RID" -X POST
 mv "$TMPFILE" /tmp/logs.last.sha1
