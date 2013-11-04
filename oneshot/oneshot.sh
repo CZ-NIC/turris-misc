@@ -16,6 +16,6 @@ ls "$SCRIPT_DIR" | sort | while read SCRIPT ; do
 			kill -SIGABRT $$
 		fi
 		touch "$COMPLETED_DIR/$SCRIPT"
-		echo "Script $SCRIPT comlete" | logger -t oneshot -p user.info
+		echo "Script $SCRIPT complete" | logger -t oneshot -p user.info
 	fi
 done
