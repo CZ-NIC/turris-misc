@@ -25,7 +25,7 @@ cp /tmp/logs.last.sha1 "$TMPFILE" || true
 	cat /var/log/messages.1 || true
 	cat /var/log/messages
 ) | \
-	/usr/bin/whatsnew /tmp/logs.last.sha1 | \
+	/usr/bin/whatsnew "$TMPFILE" | \
 	grep "^[^ ][^ ]* *[a-z][a-z]* *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
 	tail -n 10000 >"$BUFFER"
 
