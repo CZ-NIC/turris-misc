@@ -2,7 +2,7 @@
 
 # Yes, a CGI script in shell. It's simple enough not to matter. We just need to escape stuff properly.
 
-LOGDIR=/var/log/routers/
+LOGDIR=/var/log/routers/current/
 
 CLIENT_ID="$QUERY_STRING"
 # Some little validation
