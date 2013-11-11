@@ -1,2 +1,2 @@
-MAILTO=michal.vaner@nic.cz
+MAILTO=""
 5     *       *       *       *       root	/usr/bin/logsend.sh
