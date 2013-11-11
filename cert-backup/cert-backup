@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -ex
+
+PARTITION=/dev/mtdblock4
+WORKDIR=/tmp/certstore
+
+mkdir -p "$WORKDIR"
+test -z "$(ls -A "$WORKDIR")"
+mount -t jffs2 "$PARTITION" "$WORKDIR"
+while [ "$1" ] ; do
+	if [ "$1" = '-r' ] ; then
+		# It should be removed, if it exists
+		shift
+		rm -f "$WORKDIR"/"$1"
+	elif cmp -s "$1" "$WORKDIR"/"$1" ; then
+		echo "$1" already stored, skipping
+	else
+		# It differs (or the backup doesn't exist) -> replace
+		mkdir -p "$WORKDIR"/"$(dirname "$1")"
+		cp -a "$1" "$WORKDIR"/"$1"
+	fi
+	shift
+done
+umount "$WORKDIR"
+rm -r "$WORKDIR"
