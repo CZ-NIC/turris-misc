@@ -28,9 +28,8 @@ TMPFILE=
 trap 'rm -f "$TMPFILE"' EXIT ABRT QUIT TERM
 TMPFILE="$(tempfile)"
 cat >"$TMPFILE"
-HASH="$(sha256sum "$TMPFILE")"
-OK="$(echo AUTH "$CLIENT_ID" "$HASH" "$SIGNATURE" '
-' QUIT | socat STDIO TCP-CONNECT:$AUTHENTICATOR)"
+HASH="`sha256sum "$TMPFILE" | cut -f1 -d\ `"
+OK="`(echo AUTH "$CLIENT_ID" "$HASH" "$SIGNATURE" ; echo QUIT ) |  socat STDIO TCP-CONNECT:$AUTHENTICATOR`"
 
 if [ "$OK" != "YES" ] ; then
 	# Any idea for better status code? 401 Unauthorized would be nice, but it requires
@@ -45,7 +44,7 @@ fi
 # OK, this is not completely safe. If two requests from the same client came at the same time,
 # we could get garbled output. But that won't happen in practice and the damage would be
 # negligible anyway.
-cat >> "$CLIENT_ID".log
+cat "$TMPFILE" >> "$CLIENT_ID".log
 
 # I have no words.
 echo '204: No Content'
