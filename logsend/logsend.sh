@@ -32,5 +32,5 @@ cp /tmp/logs.last.sha1 "$TMPFILE" || true
 (
 	atsha204cmd file-challenge-response <"$BUFFER"
 	cat "$BUFFER"
-) | curl --compress --cacert "$CERT" -T - "$BASEURL$RID" -X POST
+) | curl --compress --cacert "$CERT" -T - "$BASEURL$RID" -X POST -f
 mv "$TMPFILE" /tmp/logs.last.sha1
