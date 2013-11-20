@@ -15,7 +15,7 @@ fi
 
 # That doesn't look like client ID (a hexadecimal number). That is likely attempt to trick us
 # to overwrite some unrelated files. Of course we refuse to do that.
-if echo "$CLIENT_ID" | grep -q '[^0-9a-fA-F]' ; then
+if [ -z "$CLIENT_ID" ] || echo "$CLIENT_ID" | grep -q '[^0-9a-fA-F]' ; then
 	echo 'Status: 403 Forbidden'
 	echo
 	exit
