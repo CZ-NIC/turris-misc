@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -xe
+
+renice -n 10 -p $$
+# Use compression externally from pg_dump ‒ xz is better than gz and this can run on separate core
+# The xz -5 is a compromise between size and speed. But we may revisit later, when the DB is larger.
+(echo turris ; pg_dump -Fc -Z 0 turris | xz -5 | gpg -e -r db@turris.cz) | ssh db-backup@217.31.192.99

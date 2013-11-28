@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -ex
+
+purge_dir() {
+	find "$1" -mtime +"$2" -delete
+}
+
+purge_dir turris 8
