@@ -19,7 +19,7 @@
 #define MAX_LEN_INTERFACE_LIST 20
 
 /*
- * Copyright (c) 2013, CZ.NIC
+ * Copyright (c) 2013, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
