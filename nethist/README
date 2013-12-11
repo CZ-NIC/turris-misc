@@ -1,0 +1,5 @@
+nethist
+=======
+
+Daemon that stores network throughput into a ringbuffer, so user can request a
+graph of activity some time back.

@@ -1,0 +1,6 @@
+init_thermometer
+================
+
+Utility to initialize the thermometer hardware after turris start. It just
+restores some configuration about high and critical temperature to the chip on
+the board, which might get lost when the power was lost.
