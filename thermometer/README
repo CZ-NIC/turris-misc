@@ -1,0 +1,5 @@
+thermometer
+================
+
+Utility that enables read temperature from the board and processor sensors of
+Turris router.
