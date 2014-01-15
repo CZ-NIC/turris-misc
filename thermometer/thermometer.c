@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 		HANDLE_ERROR;
 		return 3;
 	} else {
-		printf("Local:\t%u\n", (unsigned int)(buff[0]));
+		printf("Board:\t%u\n", (unsigned int)(buff[0]));
 	}
 	//Read remote temperature
 	buff[0] = 0x01;
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 		HANDLE_ERROR;
 		return 3;
 	} else {
-		printf("Remote:\t%u\n", (unsigned int)(buff[0]));
+		printf("CPU:\t%u\n", (unsigned int)(buff[0]));
 	}
 
 	return 0;
