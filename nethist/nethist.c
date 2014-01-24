@@ -14,6 +14,7 @@
 #define SNIFF_FILE_MEM "/proc/meminfo"
 #define OUTPUT_FILE "/tmp/nethist.tmp"
 #define FINAL_FILE "/tmp/nethist"
+#define TEMPERATURE_CMD "thermometer"
 
 #define MAX_LEN_INTERFACE_NAME 20
 #define MAX_LEN_INTERFACE_LIST 20
@@ -76,11 +77,18 @@ struct memory_snapshot {
 	unsigned long long int cached;
 };
 
+
+struct temperature_snapshot {
+	unsigned int board;
+	unsigned int cpu;
+};
+
 typedef struct {
 	unsigned long long int timestamp;
 	struct network_snapshot network;
 	struct cpu_snapshot cpu;
 	struct memory_snapshot memory;
+	struct temperature_snapshot temperature;
 	//struct cpu_snapshot cpu; //etc. etc.
 } snapshot;
 
@@ -100,6 +108,11 @@ static void memory_init_snapshot(struct memory_snapshot *snapshot) {
 		snapshot->memfree = 0;
 		snapshot->cached = 0;
 		snapshot->buffers = 0;
+}
+
+static void temperature_init_snapshot(struct temperature_snapshot *snapshot) {
+		snapshot->board = 0;
+		snapshot->cpu = 0;
 }
 
 static size_t network_get_interface_number(char *name) {
@@ -195,6 +208,21 @@ static bool cpu_take_snapshot(struct cpu_snapshot *snap) {
 	return true;
 }
 
+static bool temperature_take_snapshot(struct temperature_snapshot *snap) {
+	FILE *f = popen(TEMPERATURE_CMD, "r");
+	if (f == NULL) return false;
+
+	char dummy[64];
+
+	if (fscanf(f, "%s%u%s%u", dummy, &snap->board, dummy, &snap->cpu) != 4) {
+		fclose(f);
+		return false;
+	}
+
+	fclose(f);
+	return true;
+}
+
 static bool memory_take_snapshot(struct memory_snapshot *snap) {
 	char buffer[BUFFSIZE];
 	char dummy[64];
@@ -255,6 +283,7 @@ static void init(snapshot *snapshots) {
 		network_init_snapshot(&(snapshots[i].network));
 		cpu_init_snapshot(&(snapshots[i].cpu));
 		memory_init_snapshot(&(snapshots[i].memory));
+		temperature_init_snapshot(&(snapshots[i].temperature));
 	}
 
 	network_init_global();
@@ -265,6 +294,7 @@ static void take_snapshot(snapshot *snap) {
 	network_take_snapshot(&(snap->network));
 	cpu_take_snapshot(&(snap->cpu));
 	memory_take_snapshot(&(snap->memory));
+	temperature_take_snapshot(&(snap->temperature));
 }
 
 static void network_print_history(FILE *stream, unsigned long long int time, struct network_snapshot *snap) {
@@ -275,6 +305,10 @@ static void network_print_history(FILE *stream, unsigned long long int time, str
 
 static void cpu_print_history(FILE *stream, unsigned long long int time, struct cpu_snapshot *snap) {
 	fprintf(stream, "%llu,%s,%f\n", time, "cpu", snap->load);
+}
+
+static void temperature_print_history(FILE *stream, unsigned long long int time, struct temperature_snapshot *snap) {
+	fprintf(stream, "%llu,%s,%u,%u\n", time, "temperature", snap->board, snap->cpu);
 }
 
 static void memory_print_history(FILE *stream, unsigned long long int time, struct memory_snapshot *snap) {
@@ -288,6 +322,7 @@ static void print_history(FILE *stream, snapshot *snapshots, size_t from) {
 		network_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].network));
 		cpu_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].cpu));
 		memory_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].memory));
+		temperature_print_history(stream, snapshots[pos].timestamp, &(snapshots[pos].temperature));
 		pos = (pos + 1) % SNAPSHOT_COUNT;
 	}
 
