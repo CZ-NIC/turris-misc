@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2013, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (c) 2013-2014, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,10 @@
 set -ex
 
 # Configuration
-SERVICES="ucollect nethist"
+SERVICES="ucollect"
+if [ -e '/etc/init.d/nethist' ] ; then
+	SERVICES="$SERVICES nethist"
+fi
 TEMPFILE=/tmp/watchdog.tmp.$$
 
 trap 'rm "$TEMPFILE"' EXIT INT QUIT TERM
