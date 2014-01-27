@@ -215,11 +215,11 @@ static bool temperature_take_snapshot(struct temperature_snapshot *snap) {
 	char dummy[64];
 
 	if (fscanf(f, "%s%u%s%u", dummy, &snap->board, dummy, &snap->cpu) != 4) {
-		fclose(f);
+		pclose(f);
 		return false;
 	}
 
-	fclose(f);
+	pclose(f);
 	return true;
 }
 
