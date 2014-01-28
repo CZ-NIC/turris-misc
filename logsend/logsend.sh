@@ -1,6 +1,6 @@
 #!/bin/busybox sh
 
-# Copyright (c) 2013, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (c) 2013-2014, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,14 @@ set -ex
 
 # List of daemon names. Separate by \|, it's put into the regular expression.
 DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola'
+
+BRANCH=$(getbranch || echo 'unknown')
+
+if [ "$BRANCH" = "test" -o "$BRANCH" = "master" ] ; then
+	# We are using one of the development branches here. Therefore we send
+	# slightly more logs than usual.
+	DAEMONS="$DAEMONS"'\|updater-user\|updater-consolidator'
+fi
 # Where to put the logs (don't forget the question mark at the end)
 BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
