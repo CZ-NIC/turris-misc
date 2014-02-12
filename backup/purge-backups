@@ -32,3 +32,6 @@ purge_dir() {
 }
 
 purge_dir turris 8
+purge_dir www 20
+purge_dir forum 30
+purge_dir operator 30
