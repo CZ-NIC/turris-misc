@@ -1,0 +1,10 @@
+getmac
+================
+
+This utility enables to OS get MAC addresses from ATSHA204 crypto chip, where
+are the addresses stored.
+
+This is not meant for main firmware of Turris router, but for the rescue
+partition. System in rescue partition has limited size and it is desirable to
+provide this ability without all of the dependencies of standard implementation
+in main firmware.
