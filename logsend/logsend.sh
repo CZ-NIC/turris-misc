@@ -29,7 +29,7 @@
 set -ex
 
 # List of daemon names. Separate by \|, it's put into the regular expression.
-DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola'
+DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola\|nethist'
 
 BRANCH=$(getbranch || echo 'unknown')
 
