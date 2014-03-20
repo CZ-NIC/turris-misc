@@ -4,7 +4,7 @@ base_folder=/tmp/user_notify
 locker_stamp=$base_folder/.locked
 msg_file=$locker_stamp/msg.mail
 msmtp_cfg_file=/tmp/msmtp.cfg
-mail_stamp=".sent_by_email"
+mail_stamp=".sent_by_email$$"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
 wanted_severity=`uci get user_notify.notifications.severity`
@@ -47,6 +47,10 @@ compose_message() {
 	done
 }
 
+clear_mail_stamps() {
+	find $base_folder -name $mail_stamp -exec rm -rf {} \;
+}
+
 send_mail() {
 	mkdir $locker_stamp >/dev/null 2>&1
 	err_lvl=$?
@@ -62,9 +66,16 @@ send_mail() {
 	cat $msg_file | msmtp -C $msmtp_cfg_file $to
 	err_lvl=$?
 
-	if [ $err_lvl -eq 0 ]; then
-		msg_cleanup
- 	fi	
+	if [ $err_lvl -ne 0 ]; then
+ 		for i in `seq 3`; do 
+			sleep 10m
+			cat $msg_file | msmtp -C $msmtp_cfg_file $to
+			err_lvl=$?
+			[ $err_lvl -eq 0 ] && break
+		done
+
+		[ $err_lvl -ne 0 ] && clear_mail_stamps
+	fi
 
 	rm -rf $locker_stamp
 }
