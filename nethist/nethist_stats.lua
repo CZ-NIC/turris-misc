@@ -102,7 +102,7 @@ local function stats_update(stats, file)
 				stats['load_sum'] = stats['load_sum'] + val;
 				stats['load_samples'] = stats['load_samples'] + 1;
 			elseif items[2] == "fs" and items[3] ~= "0" then
-				local val = tonumber(items[3]);
+				local val = tonumber(items[4]);
 				if val < stats['fs_min'] then stats['fs_min'] = val; end;
 				if val > stats['fs_max'] then stats['fs_max'] = val; end;
 				stats['fs_sum'] = stats['fs_sum'] + val;
