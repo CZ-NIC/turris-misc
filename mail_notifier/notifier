@@ -1,0 +1,103 @@
+#!/bin/sh
+
+base_folder=/tmp/user_notify
+locker_stamp=$base_folder/.locked
+msg_file=$locker_stamp/msg.mail
+msmtp_cfg_file=/tmp/msmtp.cfg
+mail_stamp=".sent_by_email$$"
+
+smtp_enabled=`uci get user_notify.smtp.enable`
+wanted_severity=`uci get user_notify.notifications.severity`
+news_enabled=`uci get user_notify.notifications.news`
+
+create_msmtp_config() {
+	username=`uci get user_notify.smtp.username`
+	password=`uci get user_notify.smtp.password`
+	server=`uci get user_notify.smtp.server`
+	port=`uci get user_notify.smtp.port`
+	security=`uci get user_notify.smtp.security`
+	from=`uci get user_notify.smtp.from`
+
+	echo "account notifier" > $msmtp_cfg_file
+	echo "host $server" >> $msmtp_cfg_file
+	
+	if [ $security == "starttls" ]; then
+		echo "tls on" >> $msmtp_cfg_file
+		echo "tls_certcheck off" >> $msmtp_cfg_file
+	fi
+
+	echo "port $port" >> $msmtp_cfg_file
+	echo "auth login" >> $msmtp_cfg_file
+	echo "from $from" >> $msmtp_cfg_file
+	echo "user $username" >> $msmtp_cfg_file
+	echo "password $password" >> $msmtp_cfg_file
+	echo "account default: notifier" >> $msmtp_cfg_file
+}
+
+compose_message() {
+	echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" > $msg_file
+
+	[ -f $msg_file ] && rm -rf $msg_file
+
+	msg_list=`ls $base_folder`
+	for msg in $msg_list; do
+		echo "Working on message: $msg"
+		[ -f $base_folder/$msg/.sent_by_email* ] && continue
+
+		touch $base_folder/$msg/$mail_stamp
+		cat $base_folder/$msg/message >> $msg_file
+
+	done
+
+	if [ -f $msg_file ]; then
+		(echo -e "Subject: Upozorneni od Vaseho routeru Turris\n"; cat $msg_file) > $msg_file.tmp
+		mv $msg_file.tmp $msg_file
+	fi
+}
+
+clear_mail_stamps() {
+	find $base_folder -name $mail_stamp -exec rm -rf {} \;
+}
+
+send_mail() {
+	mkdir $locker_stamp >/dev/null 2>&1
+	err_lvl=$?
+        if [ $err_lvl -ne 0 ]; then
+                echo "Another instance of notifier is running."
+                exit 1
+        fi
+
+	compose_message
+
+	if [ ! -f $msg_file ]; then
+		rm -rf $locker_stamp 
+		echo "There is no message to send."
+		exit 0	
+	fi
+	
+	to=`uci get user_notify.smtp.to`
+
+	cat $msg_file | msmtp -C $msmtp_cfg_file $to
+	err_lvl=$?
+
+	if [ $err_lvl -ne 0 ]; then
+ 		for i in `seq 3`; do 
+			sleep 10m
+			cat $msg_file | msmtp -C $msmtp_cfg_file $to
+			err_lvl=$?
+			[ $err_lvl -eq 0 ] && break
+		done
+
+		[ $err_lvl -ne 0 ] && clear_mail_stamps
+	fi
+
+	rm -rf $locker_stamp
+}
+
+if [ $smtp_enabled -eq 0 ]; then
+	echo "User notifications are not enabled."
+	exit 0
+fi
+
+create_msmtp_config
+send_mail
