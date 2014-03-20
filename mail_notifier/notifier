@@ -40,6 +40,7 @@ compose_message() {
 	msg_list=`ls $base_folder`
 	for msg in $msg_list; do
 		echo "Working on message: $msg"
+		[ -f $base_folder/$msg/.sent_by_email* ] && continue
 
 		touch $base_folder/$msg/$mail_stamp
 		cat $base_folder/$msg/message >> $msg_file
