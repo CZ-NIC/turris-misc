@@ -37,6 +37,8 @@ create_msmtp_config() {
 compose_message() {
 	echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" > $msg_file
 
+	[ -f $msg_file ] && rm -rf $msg_file
+
 	msg_list=`ls $base_folder`
 	for msg in $msg_list; do
 		echo "Working on message: $msg"
@@ -46,6 +48,11 @@ compose_message() {
 		cat $base_folder/$msg/message >> $msg_file
 
 	done
+
+	if [ -f $msg_file ]; then
+		(echo -e "Subject: Upozorneni od Vaseho routeru Turris\n"; cat $msg_file) > $msg_file.tmp
+		mv $msg_file.tmp $msg_file
+	fi
 }
 
 clear_mail_stamps() {
@@ -61,6 +68,12 @@ send_mail() {
         fi
 
 	compose_message
+
+	if [ ! -f $msg_file ]; then
+		rm -rf $locker_stamp 
+		echo "There is no message to send."
+		exit 0	
+	fi
 	
 	to=`uci get user_notify.smtp.to`
 
