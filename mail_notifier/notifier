@@ -35,8 +35,6 @@ create_msmtp_config() {
 }
 
 compose_message() {
-	echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" > $msg_file
-
 	[ -f $msg_file ] && rm -rf $msg_file
 
 	msg_list=`ls $base_folder`
@@ -59,18 +57,25 @@ clear_mail_stamps() {
 	find $base_folder -name $mail_stamp -exec rm -rf {} \;
 }
 
-send_mail() {
-	mkdir $locker_stamp >/dev/null 2>&1
-	err_lvl=$?
+lock() {
+	mkdir $1 >/dev/null 2>&1
+        err_lvl=$?
         if [ $err_lvl -ne 0 ]; then
                 echo "Another instance of notifier is running."
                 exit 1
         fi
+}
 
+unlock() {
+	rm -rf $1	
+}
+
+send_mail() {
+	lock $locker_stamp
 	compose_message
 
 	if [ ! -f $msg_file ]; then
-		rm -rf $locker_stamp 
+		unlock $locker_stamp
 		echo "There is no message to send."
 		exit 0	
 	fi
@@ -91,7 +96,7 @@ send_mail() {
 		[ $err_lvl -ne 0 ] && clear_mail_stamps
 	fi
 
-	rm -rf $locker_stamp
+	unlock $locker_stamp
 }
 
 if [ $smtp_enabled -eq 0 ]; then
