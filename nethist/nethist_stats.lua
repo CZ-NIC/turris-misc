@@ -101,13 +101,13 @@ local function stats_update(stats, file)
 				if val > stats['load_max'] then stats['load_max'] = val; end;
 				stats['load_sum'] = stats['load_sum'] + val;
 				stats['load_samples'] = stats['load_samples'] + 1;
-			elseif items[2] == "fs" and items[3] ~= "0" and items[4] ~≃ "0" then
+			elseif items[2] == "fs" and items[3] ~= "0" and items[4] ~= "0" then
 				local val = tonumber(items[4]);
 				if val < stats['fs_min'] then stats['fs_min'] = val; end;
 				if val > stats['fs_max'] then stats['fs_max'] = val; end;
 				stats['fs_sum'] = stats['fs_sum'] + val;
 				stats['fs_samples'] = stats['fs_samples'] + 1;
-			elseif items[2] == "memory" and items[3] ~= "0" and items[4] ~= "0"  then
+			elseif items[2] == "memory" and items[3] ~= "0" and items[4] ~= "0" then
 				local val = tonumber(items[4]);
 				if val < stats['mem_min'] then stats['mem_min'] = val; end;
 				if val > stats['mem_max'] then stats['mem_max'] = val; end;
