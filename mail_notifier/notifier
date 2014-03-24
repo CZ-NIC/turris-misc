@@ -4,7 +4,7 @@ base_folder=/tmp/user_notify
 locker_stamp=$base_folder/.locked
 msg_file=$locker_stamp/msg.mail
 msmtp_cfg_file=/tmp/msmtp.cfg
-mail_stamp=".sent_by_email$$"
+mail_stamp="sent_by_email$$"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
 wanted_severity=`uci get user_notify.notifications.severity`
@@ -43,20 +43,16 @@ compose_message() {
 	msg_list=`ls $base_folder`
 	for msg in $msg_list; do
 		echo "Working on message: $msg"
-		[ -f $base_folder/$msg/.sent_by_email* ] && continue
+		[ -f $base_folder/$msg/sent_by_email* ] && continue
 
-		if [ -f $base_folder/$msg/news ]; then
-			[ $news -eq 0 ] && continue 
-			echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news
-
-		elif [ -f $base_folder/$msg/severity ]; then  
+		if [ -f $base_folder/$msg/severity ]; then  
 			msg_severity=`cat $base_folder/$msg/severity`
-			[  $msg_severity -gt $severity ] && continue
 
-			case $msg_severity in
-				1) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts ;; 
-				2) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors ;;
-				3) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates ;;
+			case "$msg_severity" in
+				"restart" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts ;; 
+				"error" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors ;;
+				"update" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates ;;
+				"news" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news ;;
 				*) echo "Unknown severity: $msg_severity" ;;
 			esac
 		fi
@@ -64,20 +60,28 @@ compose_message() {
 		touch $base_folder/$msg/$mail_stamp
 	done
 
-	if [ -f $msg_file.restarts ] || [ -f $msg_file.errors ] || [ -f $msg_file.updates ] || [ -f $msg_file.news ]; then
-		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" > $msg_file
+	if [ $severity -ge 1 ] && [ -f $msg_file.restarts ]; then 
 		echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file
-		cat $msg_file.restarts >> $msg_file
-
-		echo -e "##### Oznameni o chybach #####" >> $msg_file
-		cat $msg_file.errors >> $msg_file
-
-		echo -e "##### Oznameni o aktualizacich #####" >> $msg_file
-		cat $msg_file.updates >> $msg_file
-
-		echo -e "##### Oznameni o novinkach #####" >> $msg_file
-		cat $msg_file.news >> $msg_file
+	        cat $msg_file.restarts >> $msg_file.tmp
 	fi
+	if [ $severity -ge 2 ] && [ -f $msg_file.errors ]; then
+		echo -e "##### Oznameni o chybach #####" >> $msg_file
+		cat $msg_file.errors >> $msg_file.tmp
+	fi
+	if [ $severity -ge 3 ] && [ -f $msg_file.updates ]; then
+		echo -e "##### Oznameni o aktualizacich #####" >> $msg_file
+		cat $msg_file.updates >> $msg_file.tmp
+	fi
+	if [ $news -gt 0 ] && [ -f $msg_file.news ]; then
+		echo -e "##### Oznameni o novinkach #####" >> $msg_file
+		cat $msg_file.news >> $msg_file.tmp
+	fi
+
+	if [ -f $msg_file.tmp ]; then
+		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" > $msg_file
+		cat $msg_file.tmp >> $msg_file
+	fi
+
 }
 
 clear_mail_stamps() {
