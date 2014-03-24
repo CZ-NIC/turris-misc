@@ -123,24 +123,13 @@ send_mail() {
 	to=`uci get user_notify.smtp.to`
 	
 	if [ $smtp_enabled -eq 0 ]; then
+		mark_msgs
 	        echo "User notifications are not enabled."
 	else
 		cat $msg_file | msmtp -C $msmtp_cfg_file $to
 		err_lvl=$?
 
-		if [ $err_lvl -ne 0 ]; then
-	 		for i in `seq 3`; do 
-				sleep 10m
-				cat $msg_file | msmtp -C $msmtp_cfg_file $to
-				err_lvl=$?
-				if [ $err_lvl -eq 0 ]; then
-					mark_msgs
-					break
-				fi
-			done
-		else
-			mark_msgs
-		fi
+		[ $err_lvl -eq 0 ] && mark_msgs
 	fi
 
 	unlock $locker_stamp
