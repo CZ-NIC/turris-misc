@@ -4,7 +4,7 @@ base_folder=/tmp/user_notify
 locker_stamp=$base_folder/.locked
 msg_file=$locker_stamp/msg.mail
 msmtp_cfg_file=/tmp/msmtp.cfg
-mail_stamp="sent_by_email$$"
+mail_stamp="sent_by_email"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
 wanted_severity=`uci get user_notify.notifications.severity`
@@ -36,6 +36,7 @@ create_msmtp_config() {
 
 compose_message() {
 	rm -rf $msg_file* > /dev/null 2>&1 || true
+	rm -rf $locker_stamp/stamps* > /dev/null 2>&1 || true
 
 	severity=`uci get user_notify.notifications.severity`
 	news=`uci get user_notify.notifications.news`
@@ -49,32 +50,38 @@ compose_message() {
 			msg_severity=`cat $base_folder/$msg/severity`
 
 			case "$msg_severity" in
-				"restart" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts ;; 
-				"error" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors ;;
-				"update" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates ;;
-				"news" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news ;;
+				"restart" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts
+						echo $msg >> $locker_stamp/stamps.restarts ;; 
+				"error" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors 
+						echo $msg >> $locker_stamp/stamps.errors ;;
+				"update" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates
+						echo $msg >> $locker_stamp/stamps.updates ;;
+				"news" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news
+						echo $msg >> $locker_stamp/stamps.news ;;
 				*) echo "Unknown severity: $msg_severity" ;;
 			esac
 		fi
-		
-		touch $base_folder/$msg/$mail_stamp
 	done
 
 	if [ $severity -ge 1 ] && [ -f $msg_file.restarts ]; then 
 		echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file
 	        cat $msg_file.restarts >> $msg_file.tmp
+		cat $locker_stamp/stamps.restarts >> $locker_stamp/stamps
 	fi
 	if [ $severity -ge 2 ] && [ -f $msg_file.errors ]; then
 		echo -e "##### Oznameni o chybach #####" >> $msg_file
 		cat $msg_file.errors >> $msg_file.tmp
+		cat $locker_stamp/stamps.errors >> $locker_stamp/stamps
 	fi
 	if [ $severity -ge 3 ] && [ -f $msg_file.updates ]; then
 		echo -e "##### Oznameni o aktualizacich #####" >> $msg_file
 		cat $msg_file.updates >> $msg_file.tmp
+		cat $locker_stamp/stamps.updates >> $locker_stamp/stamps
 	fi
 	if [ $news -gt 0 ] && [ -f $msg_file.news ]; then
 		echo -e "##### Oznameni o novinkach #####" >> $msg_file
 		cat $msg_file.news >> $msg_file.tmp
+		cat $locker_stamp/stamps.news >> $locker_stamp/stamps
 	fi
 
 	if [ -f $msg_file.tmp ]; then
@@ -82,10 +89,6 @@ compose_message() {
 		cat $msg_file.tmp >> $msg_file
 	fi
 
-}
-
-clear_mail_stamps() {
-	find $base_folder -name $mail_stamp -exec rm -rf {} \;
 }
 
 lock() {
@@ -99,6 +102,12 @@ lock() {
 
 unlock() {
 	rm -rf $1	
+}
+
+mark_msgs() {
+	for msg in `cat $locker_stamp/stamps`; do
+		touch $base_folder/$msg/$mail_stamp
+	done
 }
 
 send_mail() {
@@ -124,10 +133,13 @@ send_mail() {
 				sleep 10m
 				cat $msg_file | msmtp -C $msmtp_cfg_file $to
 				err_lvl=$?
-				[ $err_lvl -eq 0 ] && break
+				if [ $err_lvl -eq 0 ]; then
+					mark_msgs
+					break
+				fi
 			done
-
-			[ $err_lvl -ne 0 ] && clear_mail_stamps
+		else
+			mark_msgs
 		fi
 	fi
 
