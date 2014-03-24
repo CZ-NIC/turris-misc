@@ -112,6 +112,8 @@ mark_msgs() {
 
 send_mail() {
 	lock $locker_stamp
+	trap 'unlock $locker_stamp' EXIT ABRT QUIT TERM HUP INT
+
 	compose_message
 
 	if [ ! -f $msg_file ]; then
