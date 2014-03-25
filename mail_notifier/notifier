@@ -7,8 +7,6 @@ msmtp_cfg_file=/tmp/msmtp.cfg
 mail_stamp="sent_by_email"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
-wanted_severity=`uci get user_notify.notifications.severity`
-news_enabled=`uci get user_notify.notifications.news`
 
 create_msmtp_config() {
 	username=`uci get user_notify.smtp.username`
@@ -34,6 +32,17 @@ create_msmtp_config() {
 	echo "account default: notifier" >> $msmtp_cfg_file
 }
 
+schedule_restart() {
+	delay=`uci get user_notify.reboot.delay`
+	time=`uci get user_notify.reboot.time | tr -d ':'`
+
+	curr_time=`date '+%y%m%d'`
+	wanted_time=$((curr_time + delay))$time
+
+	echo "reboot" | at -t $wanted_time
+	echo -e "Zarizeni bude automaticky restartovano v $(date +'%H:%M %d.%m.%Y' -d $wanted_time).\n" >> $1
+}
+
 compose_message() {
 	rm -rf $msg_file* > /dev/null 2>&1 || true
 	rm -rf $locker_stamp/stamps* > /dev/null 2>&1 || true
@@ -44,42 +53,51 @@ compose_message() {
 	msg_list=`ls $base_folder`
 	for msg in $msg_list; do
 		echo "Working on message: $msg"
-		[ -f $base_folder/$msg/sent_by_email* ] && continue
+		[ -f $base_folder/$msg/$mail_stamp ] && continue
 
 		if [ -f $base_folder/$msg/severity ]; then  
 			msg_severity=`cat $base_folder/$msg/severity`
 
 			case "$msg_severity" in
-				"restart" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts
-						echo $msg >> $locker_stamp/stamps.restarts ;; 
-				"error" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors 
-						echo $msg >> $locker_stamp/stamps.errors ;;
-				"update" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates
-						echo $msg >> $locker_stamp/stamps.updates ;;
-				"news" ) echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news
-						echo $msg >> $locker_stamp/stamps.news ;;
-				*) echo "Unknown severity: $msg_severity" ;;
+				"restart") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts
+					   echo $msg >> $locker_stamp/stamps.restarts 
+					   ;; 
+				"error") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors 
+				         echo $msg >> $locker_stamp/stamps.errors 
+					 ;;
+				"update") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates
+					  echo $msg >> $locker_stamp/stamps.updates 
+					  ;;
+				"news") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news
+					echo $msg >> $locker_stamp/stamps.news 
+					;;
+				*) echo "Unknown severity: $msg_severity" 
+				   ;;
 			esac
 		fi
 	done
 
+	if [ -f $msg_file.restarts ]; then
+		schedule_restart $msg_file.restarts
+	fi
+
 	if [ $severity -ge 1 ] && [ -f $msg_file.restarts ]; then 
-		echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file
+		echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file.tmp
 	        cat $msg_file.restarts >> $msg_file.tmp
 		cat $locker_stamp/stamps.restarts >> $locker_stamp/stamps
 	fi
 	if [ $severity -ge 2 ] && [ -f $msg_file.errors ]; then
-		echo -e "##### Oznameni o chybach #####" >> $msg_file
+		echo -e "##### Oznameni o chybach #####" >> $msg_file.tmp
 		cat $msg_file.errors >> $msg_file.tmp
 		cat $locker_stamp/stamps.errors >> $locker_stamp/stamps
 	fi
 	if [ $severity -ge 3 ] && [ -f $msg_file.updates ]; then
-		echo -e "##### Oznameni o aktualizacich #####" >> $msg_file
+		echo -e "##### Oznameni o aktualizacich #####" >> $msg_file.tmp
 		cat $msg_file.updates >> $msg_file.tmp
 		cat $locker_stamp/stamps.updates >> $locker_stamp/stamps
 	fi
 	if [ $news -gt 0 ] && [ -f $msg_file.news ]; then
-		echo -e "##### Oznameni o novinkach #####" >> $msg_file
+		echo -e "##### Oznameni o novinkach #####" >> $msg_file.tmp
 		cat $msg_file.news >> $msg_file.tmp
 		cat $locker_stamp/stamps.news >> $locker_stamp/stamps
 	fi
@@ -112,7 +130,7 @@ mark_msgs() {
 
 send_mail() {
 	lock $locker_stamp
-	trap 'unlock $locker_stamp' EXIT ABRT QUIT TERM HUP INT
+	trap 'unlock $locker_stamp' EXIT ABRT QUIT TERM 
 
 	compose_message
 
