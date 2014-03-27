@@ -1,0 +1,41 @@
+#!/bin/sh
+
+base_dir=/tmp/user_notify
+
+usage() {
+	echo "This program serves for creating messages which will be send to the user."
+	echo "Usage:"
+	echo -e "\t $0 -s [restart,error,upate,news] 'text of the message'"
+}
+
+
+if [ $# -ne 3 ]; then
+	usage
+	exit 1
+fi
+
+if [ $1 == "-s" ]; then
+	if [ $2 == "restart" ] || [ $2 == "error" ] || [ $2 == "update" ] || [ $2 == "news" ]; then
+		severity=$2
+	else
+		usage
+		exit 1
+	fi
+else
+	usage
+	exit 1
+fi
+
+message=$3
+msg_id=$$
+
+while [ -d $base_dir/$msg_id ] && [ -d $base_dir/.$msg_id ]; do
+	msg_id=$(($msg_id + 1))
+done
+
+[ -d $base_dir ] || mkdir -p $base_dir
+mkdir $base_dir/.$msg_id
+echo $severity > $base_dir/.$msg_id/severity
+echo $message > $base_dir/.$msg_id/message
+
+mv $base_dir/.$msg_id $base_dir/$msg_id
