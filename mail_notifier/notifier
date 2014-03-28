@@ -81,25 +81,37 @@ compose_message() {
 		schedule_restart $msg_file.restarts
 	fi
 
-	if [ $severity -ge 1 ] && [ -f $msg_file.restarts ]; then 
-		echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file.tmp
-	        cat $msg_file.restarts >> $msg_file.tmp
+	if [ -f $msg_file.restarts ]; then
 		cat $locker_stamp/stamps.restarts >> $locker_stamp/stamps
+		
+		if [ $severity -ge 1 ]; then 
+			echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file.tmp
+	        	cat $msg_file.restarts >> $msg_file.tmp
+		fi
 	fi
-	if [ $severity -ge 2 ] && [ -f $msg_file.errors ]; then
-		echo -e "##### Oznameni o chybach #####" >> $msg_file.tmp
-		cat $msg_file.errors >> $msg_file.tmp
+	if [ -f $msg_file.errors ]; then
 		cat $locker_stamp/stamps.errors >> $locker_stamp/stamps
+
+		if [ $severity -ge 2 ]; then
+			echo -e "##### Oznameni o chybach #####" >> $msg_file.tmp
+			cat $msg_file.errors >> $msg_file.tmp
+		fi
 	fi
-	if [ $severity -ge 3 ] && [ -f $msg_file.updates ]; then
-		echo -e "##### Oznameni o aktualizacich #####" >> $msg_file.tmp
-		cat $msg_file.updates >> $msg_file.tmp
+	if [ -f $msg_file.updates ]; then
 		cat $locker_stamp/stamps.updates >> $locker_stamp/stamps
+
+		if [ $severity -ge 3 ]; then
+			echo -e "##### Oznameni o aktualizacich #####" >> $msg_file.tmp
+			cat $msg_file.updates >> $msg_file.tmp
+		fi
 	fi
-	if [ $news -gt 0 ] && [ -f $msg_file.news ]; then
-		echo -e "##### Oznameni o novinkach #####" >> $msg_file.tmp
-		cat $msg_file.news >> $msg_file.tmp
+	if [ -f $msg_file.news ]; then
 		cat $locker_stamp/stamps.news >> $locker_stamp/stamps
+
+		if [ $news -gt 0 ]; then
+			echo -e "##### Oznameni o novinkach #####" >> $msg_file.tmp
+			cat $msg_file.news >> $msg_file.tmp
+		fi
 	fi
 
 	if [ -f $msg_file.tmp ]; then
@@ -135,6 +147,7 @@ send_mail() {
 	compose_message
 
 	if [ ! -f $msg_file ]; then
+		[ -f $locker_stamp/stamps ] && mark_msgs
 		unlock $locker_stamp
 		echo "There is no message to send."
 		exit 0	
