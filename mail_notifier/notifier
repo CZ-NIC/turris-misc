@@ -77,6 +77,9 @@ compose_message() {
 				"news") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news
 					echo $msg >> $locker_stamp/stamps.news 
 					;;
+				"test") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.test
+					echo $msg >> $locker_stamp/stamps.test 
+					;;
 				*) echo "Unknown severity: $msg_severity" 
 				   ;;
 			esac
@@ -87,12 +90,17 @@ compose_message() {
 		schedule_restart $msg_file.restarts
 	fi
 
+	if [ -f $msg_file.test ]; then
+		cat $locker_stamp/stamps.test >> $locker_stamp/stamps
+
+		cat $msg_file.restarts >> $msg_file.tmp
+	fi
 	if [ -f $msg_file.restarts ]; then
 		cat $locker_stamp/stamps.restarts >> $locker_stamp/stamps
-		
-		if [ $severity -ge 1 ]; then 
+
+		if [ $severity -ge 1 ]; then
 			echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file.tmp
-	        	cat $msg_file.restarts >> $msg_file.tmp
+			cat $msg_file.restarts >> $msg_file.tmp
 		fi
 	fi
 	if [ -f $msg_file.errors ]; then
