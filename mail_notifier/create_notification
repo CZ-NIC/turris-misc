@@ -8,6 +8,17 @@ usage() {
 	echo -e "\t $0 -s [restart,error,upate,news] 'text of the message'"
 }
 
+trigger=false
+
+if [ $1 = -t ] ; then
+	trigger=true
+	shift
+fi
+
+if [ $1 = -d ] ; then
+	base_dir="$2"
+	shift 2
+fi
 
 if [ $# -ne 3 ]; then
 	usage
@@ -39,3 +50,7 @@ echo $severity > $base_dir/.$msg_id/severity
 echo $message > $base_dir/.$msg_id/message
 
 mv $base_dir/.$msg_id $base_dir/$msg_id
+
+if $trigger ; then
+	notifier
+fi
