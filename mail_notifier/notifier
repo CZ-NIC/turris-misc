@@ -1,6 +1,12 @@
 #!/bin/sh
 
 base_folder=/tmp/user_notify
+
+if [ $1 = -d ] ; then
+	base_folder="$2"
+	shift 2
+fi
+
 locker_stamp=$base_folder/.locked
 msg_file=$locker_stamp/msg.mail
 msmtp_cfg_file=/tmp/msmtp.cfg

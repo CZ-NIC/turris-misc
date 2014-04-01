@@ -38,19 +38,16 @@ else
 fi
 
 message=$3
-msg_id=$$
+# This should be unique
+msg_id=$(date +%s)-$$
 
-while [ -d $base_dir/$msg_id ] && [ -d $base_dir/.$msg_id ]; do
-	msg_id=$(($msg_id + 1))
-done
+mkdir -p $base_dir
+mkdir $base_dir/tmp.$msg_id
+echo $severity > $base_dir/tmp.$msg_id/severity
+echo $message > $base_dir/tmp.$msg_id/message
 
-[ -d $base_dir ] || mkdir -p $base_dir
-mkdir $base_dir/.$msg_id
-echo $severity > $base_dir/.$msg_id/severity
-echo $message > $base_dir/.$msg_id/message
-
-mv $base_dir/.$msg_id $base_dir/$msg_id
+mv $base_dir/tmp.$msg_id $base_dir/$msg_id
 
 if $trigger ; then
-	notifier
+	exec notifier -d "$base_dir"
 fi
