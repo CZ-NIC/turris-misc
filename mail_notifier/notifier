@@ -7,9 +7,11 @@ if [ $1 = -d ] ; then
 	shift 2
 fi
 
+mkdir -p "$base_folder"
+
 locker_stamp=$base_folder/.locked
 msg_file=$locker_stamp/msg.mail
-msmtp_cfg_file=/tmp/msmtp.cfg
+msmtp_cfg_file=/tmp/msmtp.cfg.$$
 mail_stamp="sent_by_email"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
@@ -136,12 +138,9 @@ compose_message() {
 }
 
 lock() {
-	mkdir $1 >/dev/null 2>&1
-        err_lvl=$?
-        if [ $err_lvl -ne 0 ]; then
-                echo "Another instance of notifier is running."
-                exit 1
-        fi
+	while ! mkdir $1 >/dev/null 2>&1 ; do
+		sleep 1
+	done
 }
 
 unlock() {
@@ -184,3 +183,5 @@ send_mail() {
 
 create_msmtp_config
 send_mail
+
+exec user-notify-cleaner

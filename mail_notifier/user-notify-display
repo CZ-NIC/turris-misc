@@ -1,0 +1,9 @@
+#!/bin/sh
+
+base_folder=/tmp/user_notify
+
+while [ "$1" ] ; do
+	touch "$base_folder/$1/displayed" 2>/dev/null # Don't care about errors if the message already disappeared
+done
+
+exec user-notify-cleaner
