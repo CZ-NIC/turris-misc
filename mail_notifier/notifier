@@ -2,7 +2,7 @@
 
 base_folder=/tmp/user_notify
 
-if [ $1 = -d ] ; then
+if [ "$1" = -d ] ; then
 	base_folder="$2"
 	shift 2
 fi
