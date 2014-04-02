@@ -2,7 +2,7 @@
 
 base_folder=/tmp/user_notify
 
-if [ "$1" = -d ] ; then
+if [ "$1" = "-d" ] ; then
 	base_folder="$2"
 	shift 2
 fi
@@ -33,7 +33,7 @@ create_msmtp_config() {
 	fi
 
 	echo "port $port" >> $msmtp_cfg_file
-	echo "auth login" >> $msmtp_cfg_file
+	echo "auth on" >> $msmtp_cfg_file
 	echo "from $from" >> $msmtp_cfg_file
 	echo "user $username" >> $msmtp_cfg_file
 	echo "password $password" >> $msmtp_cfg_file
