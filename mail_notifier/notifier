@@ -15,6 +15,8 @@ msmtp_cfg_file=/tmp/msmtp.cfg.$$
 mail_stamp="sent_by_email"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
+mail_to=`uci get user_notify.smtp.to`
+mail_from=`uci get user_notify.smtp.from`
 
 create_msmtp_config() {
 	username=`uci get user_notify.smtp.username`
@@ -27,9 +29,11 @@ create_msmtp_config() {
 	echo "account notifier" > $msmtp_cfg_file
 	echo "host $server" >> $msmtp_cfg_file
 	
-	if [ $security == "starttls" ]; then
+	if [ $security == "starttls" ] || [ $security == "ssl" ]; then
 		echo "tls on" >> $msmtp_cfg_file
 		echo "tls_certcheck off" >> $msmtp_cfg_file
+        else
+                echo "tls off" >> $msmtp_cfg_file
 	fi
 
 	echo "port $port" >> $msmtp_cfg_file
@@ -131,7 +135,9 @@ compose_message() {
 	fi
 
 	if [ -f $msg_file.tmp ]; then
-		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" > $msg_file
+                echo "To: $mail_to" > $msg_file
+                echo "From: $mail_from" >> $msg_file
+		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> $msg_file
 		cat $msg_file.tmp >> $msg_file
 	fi
 
@@ -166,13 +172,11 @@ send_mail() {
 		exit 0	
 	fi
 	
-	to=`uci get user_notify.smtp.to`
-	
 	if [ $smtp_enabled -eq 0 ]; then
 		mark_msgs
 	        echo "User notifications are not enabled."
 	else
-		cat $msg_file | msmtp -C $msmtp_cfg_file $to
+		cat $msg_file | msmtp -C $msmtp_cfg_file $mail_to
 		err_lvl=$?
 
 		[ $err_lvl -eq 0 ] && mark_msgs
