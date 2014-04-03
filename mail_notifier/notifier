@@ -179,7 +179,12 @@ send_mail() {
 		cat $msg_file | msmtp -C $msmtp_cfg_file $mail_to
 		err_lvl=$?
 
-		[ $err_lvl -eq 0 ] && mark_msgs
+		if [ $err_lvl -eq 0 ]; then
+                    mark_msgs
+                else
+                    unlock $locker_stamp
+                    exit $err_lvl
+                fi
 	fi
 
 	unlock $locker_stamp
