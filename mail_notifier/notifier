@@ -137,6 +137,7 @@ compose_message() {
 	if [ -f $msg_file.tmp ]; then
                 echo "To: $mail_to" > $msg_file
                 echo "From: $mail_from" >> $msg_file
+                echo "Content-Type: text/plain; charset=UTF-8" >> $msg_file
 		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> $msg_file
 		cat $msg_file.tmp >> $msg_file
 	fi
@@ -179,6 +180,7 @@ send_mail() {
 		cat $msg_file | msmtp -C $msmtp_cfg_file $mail_to
 		err_lvl=$?
 
+                rm -f $msmtp_cfg_file
 		if [ $err_lvl -eq 0 ]; then
                     mark_msgs
                 else
