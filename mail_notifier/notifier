@@ -9,8 +9,8 @@ fi
 
 mkdir -p "$base_folder"
 
-locker_stamp=$base_folder/.locked
-msg_file=$locker_stamp/msg.mail
+locker_stamp="$base_folder/.locked"
+msg_file="$locker_stamp/msg.mail"
 msmtp_cfg_file=/tmp/msmtp.cfg.$$
 mail_stamp="sent_by_email"
 
@@ -26,22 +26,22 @@ create_msmtp_config() {
 	security=`uci get user_notify.smtp.security`
 	from=`uci get user_notify.smtp.from`
 
-	echo "account notifier" > $msmtp_cfg_file
-	echo "host $server" >> $msmtp_cfg_file
-	
-	if [ $security == "starttls" ] || [ $security == "ssl" ]; then
-		echo "tls on" >> $msmtp_cfg_file
-		echo "tls_certcheck off" >> $msmtp_cfg_file
+	echo "account notifier" > "$msmtp_cfg_file"
+	echo "host $server" >> "$msmtp_cfg_file"
+
+	if [ "$security" == "starttls" ] || [ "$security" == "ssl" ]; then
+		echo "tls on" >> "$msmtp_cfg_file"
+		echo "tls_certcheck off" >> "$msmtp_cfg_file"
         else
-                echo "tls off" >> $msmtp_cfg_file
+                echo "tls off" >> "$msmtp_cfg_file"
 	fi
 
-	echo "port $port" >> $msmtp_cfg_file
-	echo "auth on" >> $msmtp_cfg_file
-	echo "from $from" >> $msmtp_cfg_file
-	echo "user $username" >> $msmtp_cfg_file
-	echo "password $password" >> $msmtp_cfg_file
-	echo "account default: notifier" >> $msmtp_cfg_file
+	echo "port $port" >> "$msmtp_cfg_file"
+	echo "auth on" >> "$msmtp_cfg_file"
+	echo "from $from" >> "$msmtp_cfg_file"
+	echo "user $username" >> "$msmtp_cfg_file"
+	echo "password $password" >> "$msmtp_cfg_file"
+	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
 schedule_restart() {
@@ -49,147 +49,147 @@ schedule_restart() {
 	time=`uci get user_notify.reboot.time | tr -d ':'`
 
 	curr_time=`date '+%y%m%d'`
-	wanted_time=$((curr_time + delay))$time
+	wanted_time="$((curr_time + delay))$time"
 
-	echo "reboot" | at -t $wanted_time
+	echo "reboot" | at -t "$wanted_time"
 	echo -e "Zarizeni bude automaticky restartovano v $(date +'%H:%M %d.%m.%Y' -d $wanted_time).\n" >> $1
 }
 
 compose_message() {
-	rm -rf $msg_file* > /dev/null 2>&1 || true
-	rm -rf $locker_stamp/stamps* > /dev/null 2>&1 || true
+	rm -rf "$msg_file"* > /dev/null 2>&1 || true
+	rm -rf "$locker_stamp/stamps"* > /dev/null 2>&1 || true
 
 	severity=`uci get user_notify.notifications.severity`
 	news=`uci get user_notify.notifications.news`
 
-	msg_list=`ls $base_folder`
+	msg_list=`ls "$base_folder"`
 	for msg in $msg_list; do
 		echo "Working on message: $msg"
-		[ -f $base_folder/$msg/$mail_stamp ] && continue
+		[ -f "$base_folder/$msg/$mail_stamp" ] && continue
 
-		if [ -f $base_folder/$msg/severity ]; then  
-			msg_severity=`cat $base_folder/$msg/severity`
+		if [ -f "$base_folder/$msg/severity" ]; then
+			msg_severity=`cat "$base_folder/$msg/severity"`
 
 			case "$msg_severity" in
-				"restart") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.restarts
-					   echo $msg >> $locker_stamp/stamps.restarts 
-					   ;; 
-				"error") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.errors 
-				         echo $msg >> $locker_stamp/stamps.errors 
+				"restart") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.restarts"
+					   echo "$msg" >> "$locker_stamp/stamps.restarts"
+					   ;;
+				"error") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.errors"
+				         echo "$msg" >> "$locker_stamp/stamps.errors"
 					 ;;
-				"update") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.updates
-					  echo $msg >> $locker_stamp/stamps.updates 
+				"update") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.updates"
+					  echo "$msg" >> "$locker_stamp/stamps.updates"
 					  ;;
-				"news") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.news
-					echo $msg >> $locker_stamp/stamps.news 
+				"news") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.news"
+					echo "$msg" >> "$locker_stamp/stamps.news"
 					;;
-				"test") echo -e "$(cat $base_folder/$msg/message)\n" >> $msg_file.test
-					echo $msg >> $locker_stamp/stamps.test 
+				"test") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.test"
+					echo "$msg" >> "$locker_stamp/stamps.test"
 					;;
-				*) echo "Unknown severity: $msg_severity" 
+				*) echo "Unknown severity: $msg_severity"
 				   ;;
 			esac
 		fi
 	done
 
-	if [ -f $msg_file.restarts ]; then
-		schedule_restart $msg_file.restarts
+	if [ -f "$msg_file.restarts" ]; then
+		schedule_restart "$msg_file.restarts"
 	fi
 
-	if [ -f $msg_file.test ]; then
-		cat $locker_stamp/stamps.test >> $locker_stamp/stamps
+	if [ -f "$msg_file.test" ]; then
+		cat "$locker_stamp/stamps.test" >> "$locker_stamp/stamps"
 
-		cat $msg_file.restarts >> $msg_file.tmp
+		cat "$msg_file.restarts" >> "$msg_file.tmp"
 	fi
-	if [ -f $msg_file.restarts ]; then
-		cat $locker_stamp/stamps.restarts >> $locker_stamp/stamps
+	if [ -f "$msg_file.restarts" ]; then
+		cat "$locker_stamp/stamps.restarts" >> "$locker_stamp/stamps"
 
-		if [ $severity -ge 1 ]; then
-			echo -e "##### Zadosti o restart zarizeni #####" >> $msg_file.tmp
-			cat $msg_file.restarts >> $msg_file.tmp
+		if [ "$severity" -ge 1 ]; then
+			echo -e "##### Zadosti o restart zarizeni #####" >> "$msg_file.tmp"
+			cat "$msg_file.restarts" >> "$msg_file.tmp"
 		fi
 	fi
-	if [ -f $msg_file.errors ]; then
-		cat $locker_stamp/stamps.errors >> $locker_stamp/stamps
+	if [ -f "$msg_file.errors" ]; then
+		cat "$locker_stamp/stamps.errors" >> "$locker_stamp/stamps"
 
-		if [ $severity -ge 2 ]; then
-			echo -e "##### Oznameni o chybach #####" >> $msg_file.tmp
-			cat $msg_file.errors >> $msg_file.tmp
+		if [ "$severity" -ge 2 ]; then
+			echo -e "##### Oznameni o chybach #####" >> "$msg_file.tmp"
+			cat "$msg_file.errors" >> "$msg_file.tmp"
 		fi
 	fi
-	if [ -f $msg_file.updates ]; then
-		cat $locker_stamp/stamps.updates >> $locker_stamp/stamps
+	if [ -f "$msg_file.updates" ]; then
+		cat "$locker_stamp/stamps.updates" >> "$locker_stamp/stamps"
 
-		if [ $severity -ge 3 ]; then
-			echo -e "##### Oznameni o aktualizacich #####" >> $msg_file.tmp
-			cat $msg_file.updates >> $msg_file.tmp
+		if [ "$severity" -ge 3 ]; then
+			echo -e "##### Oznameni o aktualizacich #####" >> "$msg_file.tmp"
+			cat "$msg_file.updates" >> "$msg_file.tmp"
 		fi
 	fi
-	if [ -f $msg_file.news ]; then
-		cat $locker_stamp/stamps.news >> $locker_stamp/stamps
+	if [ -f "$msg_file.news" ]; then
+		cat "$locker_stamp/stamps.news" >> "$locker_stamp/stamps"
 
-		if [ $news -gt 0 ]; then
-			echo -e "##### Oznameni o novinkach #####" >> $msg_file.tmp
-			cat $msg_file.news >> $msg_file.tmp
+		if [ "$news" -gt 0 ]; then
+			echo -e "##### Oznameni o novinkach #####" >> "$msg_file.tmp"
+			cat "$msg_file.news" >> "$msg_file.tmp"
 		fi
 	fi
 
-	if [ -f $msg_file.tmp ]; then
-                echo "To: $mail_to" > $msg_file
-                echo "From: $mail_from" >> $msg_file
-                echo "Content-Type: text/plain; charset=UTF-8" >> $msg_file
-		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> $msg_file
-		cat $msg_file.tmp >> $msg_file
+	if [ -f "$msg_file.tmp" ]; then
+                echo "To: $mail_to" > "$msg_file"
+                echo "From: $mail_from" >> "$msg_file"
+                echo "Content-Type: text/plain; charset=UTF-8" >> "$msg_file"
+		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> "$msg_file"
+		cat $msg_file.tmp >> "$msg_file"
 	fi
 
 }
 
 lock() {
-	while ! mkdir $1 >/dev/null 2>&1 ; do
+	while ! mkdir "$1" >/dev/null 2>&1 ; do
 		sleep 1
 	done
 }
 
 unlock() {
-	rm -rf $1	
+	rm -rf "$1"
 }
 
 mark_msgs() {
-	for msg in `cat $locker_stamp/stamps`; do
-		touch $base_folder/$msg/$mail_stamp
+	for msg in `cat "$locker_stamp/stamps"`; do
+		touch "$base_folder/$msg/$mail_stamp"
 	done
 }
 
 send_mail() {
-	lock $locker_stamp
-	trap 'unlock $locker_stamp' EXIT ABRT QUIT TERM 
+	lock "$locker_stamp"
+	trap 'unlock "$locker_stamp"' EXIT ABRT QUIT TERM
 
 	compose_message
 
-	if [ ! -f $msg_file ]; then
-		[ -f $locker_stamp/stamps ] && mark_msgs
-		unlock $locker_stamp
+	if [ ! -f "$msg_file" ]; then
+		[ -f "$locker_stamp/stamps" ] && mark_msgs
+		unlock "$locker_stamp"
 		echo "There is no message to send."
-		exit 0	
+		exit 0
 	fi
-	
-	if [ $smtp_enabled -eq 0 ]; then
+
+	if [ "$smtp_enabled" -eq 0 ]; then
 		mark_msgs
 	        echo "User notifications are not enabled."
 	else
-		cat $msg_file | msmtp -C $msmtp_cfg_file $mail_to
+		cat "$msg_file" | msmtp -C "$msmtp_cfg_file" "$mail_to"
 		err_lvl=$?
 
-                rm -f $msmtp_cfg_file
-		if [ $err_lvl -eq 0 ]; then
+                rm -f "$msmtp_cfg_file"
+		if [ "$err_lvl" -eq 0 ]; then
                     mark_msgs
                 else
-                    unlock $locker_stamp
-                    exit $err_lvl
+                    unlock "$locker_stamp"
+                    exit "$err_lvl"
                 fi
 	fi
 
-	unlock $locker_stamp
+	unlock "$locker_stamp"
 }
 
 create_msmtp_config

@@ -3,7 +3,7 @@
 set -e
 
 base_folder=/tmp/user_notify
-locker_stamp=$base_folder/.locked
+locker_stamp="$base_folder/.locked"
 
 while ! mkdir "$locker_stamp" ; do
 	sleep 1
