@@ -3,17 +3,19 @@
 set -ex
 
 # The time of 4 hours should be enough for the CRL not to time out. Hopefuly.
-if [ "`find /tmp/ -maxdepth 1 -name crl.pem -mmin -240`" = "" ] ; then
-	mkdir /tmp/crldown
-	trap 'rm -rf /tmp/crldown' EXIT ABRT QUIT TERM
-	cd /tmp/crldown
-
-	echo | openssl s_client -connect api.turris.cz:443 -showcerts | awk -v c=-1 '/-----BEGIN CERTIFICATE-----/{inc=1;c++} inc {print > (c ".pem")}'
-
-	for i in *.pem ; do
-		# This is a hack a bit, we expect the hostname to be crl\. something. Our CA satisfies this now and if it breaks, we would find out.
-		openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl | openssl crl -inform der -out tmp.pem
-		cat tmp.pem >>out.pem
-	done
-	mv out.pem /tmp/crl.pem
+if [ -f /tmp/crl.pem ] && [ "$((`date +%s`-4*3600))" -lt "$((`date -r /tmp/crl.pem +%s`))" ] ; then
+	exit
 fi
+
+mkdir /tmp/crldown
+trap 'rm -rf /tmp/crldown' EXIT ABRT QUIT TERM
+cd /tmp/crldown
+
+echo | openssl s_client -connect api.turris.cz:443 -showcerts | awk -v c=-1 '/-----BEGIN CERTIFICATE-----/{inc=1;c++} inc {print > (c ".pem")}'
+
+for i in *.pem ; do
+	# This is a hack a bit, we expect the hostname to be crl\. something. Our CA satisfies this now and if it breaks, we would find out.
+	openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl | openssl crl -inform der -out tmp.pem
+	cat tmp.pem >>out.pem
+done
+mv out.pem /tmp/crl.pem
