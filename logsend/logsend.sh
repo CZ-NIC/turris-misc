@@ -28,6 +28,9 @@
 # Configuration
 set -ex
 
+# Download CRL for curl.
+get-api-crl
+
 # List of daemon names. Separate by \|, it's put into the regular expression.
 DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola\|nethist'
 
