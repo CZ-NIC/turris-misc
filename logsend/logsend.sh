@@ -28,6 +28,9 @@
 # Configuration
 set -ex
 
+# Download CRL for curl.
+get-api-crl
+
 # List of daemon names. Separate by \|, it's put into the regular expression.
 DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola\|nethist'
 
@@ -42,6 +45,7 @@ fi
 BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
 CERT="/etc/ssl/startcom.pem"
+CRL="/etc/ssl/crl.pem"
 TMPFILE="/tmp/logsend.tmp"
 BUFFER="/tmp/logsend.buffer"
 trap 'rm -f "$TMPFILE" "$BUFFER"' EXIT ABRT QUIT TERM
@@ -65,5 +69,5 @@ cp /tmp/logs.last.sha1 "$TMPFILE" || true
 (
 	atsha204cmd file-challenge-response <"$BUFFER"
 	cat "$BUFFER"
-) | curl --compress --cacert "$CERT" -T - "$BASEURL$RID" -X POST -f
+) | curl --compress --cacert "$CERT" --crlfile "$CRL" -T - "$BASEURL$RID" -X POST -f
 mv "$TMPFILE" /tmp/logs.last.sha1

@@ -11,7 +11,7 @@ mkdir -p "$base_folder"
 
 locker_stamp="$base_folder/.locked"
 msg_file="$locker_stamp/msg.mail"
-msmtp_cfg_file=/tmp/msmtp.cfg.$$
+msmtp_cfg_file="$locker_stamp/msmtp.cfg.$$"
 mail_stamp="sent_by_email"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
@@ -41,6 +41,7 @@ create_msmtp_config() {
 	echo "from $from" >> "$msmtp_cfg_file"
 	echo "user $username" >> "$msmtp_cfg_file"
 	echo "password $password" >> "$msmtp_cfg_file"
+        echo "timeout 30" >> "$msmtp_cfg_file"
 	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
@@ -164,6 +165,7 @@ send_mail() {
 	lock "$locker_stamp"
 	trap 'unlock "$locker_stamp"' EXIT ABRT QUIT TERM
 
+        create_msmtp_config
 	compose_message
 
 	if [ ! -f "$msg_file" ]; then
@@ -180,7 +182,6 @@ send_mail() {
 		cat "$msg_file" | msmtp -C "$msmtp_cfg_file" "$mail_to"
 		err_lvl=$?
 
-                rm -f "$msmtp_cfg_file"
 		if [ "$err_lvl" -eq 0 ]; then
                     mark_msgs
                 else
@@ -192,7 +193,6 @@ send_mail() {
 	unlock "$locker_stamp"
 }
 
-create_msmtp_config
 send_mail
 
 exec user-notify-cleaner
