@@ -71,6 +71,8 @@ fi
 # negligible anyway.
 cat "$TMPFILE" >> "$CLIENT_ID".log
 
+echo "Client $CLIENT_ID with address $REMOTE_ADDR" >&2
+
 # I have no words.
 echo '204: No Content'
 echo
