@@ -31,9 +31,14 @@ create_msmtp_config() {
 	echo "port $port" >> "$msmtp_cfg_file"
 	echo "from $from" >> "$msmtp_cfg_file"
 
-        if [ "$security" == "starttls" ] || [ "$security" == "ssl" ]; then
+        if [ "$security" == "ssl" ]; then
                 echo "tls on" >> "$msmtp_cfg_file"
                 echo "tls_certcheck off" >> "$msmtp_cfg_file"
+                echo "tls_starttls off" >> "$msmtp_cfg_file"
+        elif [ "$security" == "starttls" ]
+                echo "tls on" >> "$msmtp_cfg_file"
+                echo "tls_certcheck off" >> "$msmtp_cfg_file"
+                echo "tls_starttls on" >> "$msmtp_cfg_file"      
         else
                 echo "tls off" >> "$msmtp_cfg_file"
         fi
