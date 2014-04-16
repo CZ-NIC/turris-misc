@@ -46,7 +46,7 @@ create_msmtp_config() {
             echo "auth off" >> "$msmtp_cfg_file"
         fi
 
-        echo "timeout 15" >> "$msmtp_cfg_file"
+        echo "timeout 5" >> "$msmtp_cfg_file"
 	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
