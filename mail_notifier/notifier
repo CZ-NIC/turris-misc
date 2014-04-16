@@ -19,8 +19,8 @@ mail_to=`uci get user_notify.smtp.to`
 mail_from=`uci get user_notify.smtp.from`
 
 create_msmtp_config() {
-	username=`uci get user_notify.smtp.username`
-	password=`uci get user_notify.smtp.password`
+	username=`uci get user_notify.smtp.username 2>/dev/null`
+	password=`uci get user_notify.smtp.password 2>/dev/null`
 	server=`uci get user_notify.smtp.server`
 	port=`uci get user_notify.smtp.port`
 	security=`uci get user_notify.smtp.security`
