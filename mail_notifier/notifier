@@ -28,20 +28,25 @@ create_msmtp_config() {
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	echo "host $server" >> "$msmtp_cfg_file"
+	echo "port $port" >> "$msmtp_cfg_file"
+	echo "from $from" >> "$msmtp_cfg_file"
 
-	if [ "$security" == "starttls" ] || [ "$security" == "ssl" ]; then
-		echo "tls on" >> "$msmtp_cfg_file"
-		echo "tls_certcheck off" >> "$msmtp_cfg_file"
+        if [ "$security" == "starttls" ] || [ "$security" == "ssl" ]; then
+                echo "tls on" >> "$msmtp_cfg_file"
+                echo "tls_certcheck off" >> "$msmtp_cfg_file"
         else
                 echo "tls off" >> "$msmtp_cfg_file"
-	fi
+        fi
+        
+        if [ -n "$username" ] && [ -n "$password" ]; then
+            echo "auth on" >> "$msmtp_cfg_file"
+	    echo "user $username" >> "$msmtp_cfg_file"
+            echo "password $password" >> "$msmtp_cfg_file"
+        else
+            echo "auth off" >> "$msmtp_cfg_file"
+        fi
 
-	echo "port $port" >> "$msmtp_cfg_file"
-	echo "auth on" >> "$msmtp_cfg_file"
-	echo "from $from" >> "$msmtp_cfg_file"
-	echo "user $username" >> "$msmtp_cfg_file"
-	echo "password $password" >> "$msmtp_cfg_file"
-        echo "timeout 30" >> "$msmtp_cfg_file"
+        echo "timeout 15" >> "$msmtp_cfg_file"
 	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
