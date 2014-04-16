@@ -27,6 +27,8 @@
 
 # Yes, a CGI script in shell. It's simple enough not to matter. We just need to escape stuff properly.
 
+sed -e
+
 LOGDIR=/var/log/routers/current/
 AUTHENTICATOR=localhost:8888
 

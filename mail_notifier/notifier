@@ -19,8 +19,8 @@ mail_to=`uci get user_notify.smtp.to`
 mail_from=`uci get user_notify.smtp.from`
 
 create_msmtp_config() {
-	username=`uci get user_notify.smtp.username`
-	password=`uci get user_notify.smtp.password`
+	username=`uci get user_notify.smtp.username 2>/dev/null`
+	password=`uci get user_notify.smtp.password 2>/dev/null`
 	server=`uci get user_notify.smtp.server`
 	port=`uci get user_notify.smtp.port`
 	security=`uci get user_notify.smtp.security`
@@ -28,20 +28,30 @@ create_msmtp_config() {
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	echo "host $server" >> "$msmtp_cfg_file"
+	echo "port $port" >> "$msmtp_cfg_file"
+	echo "from $from" >> "$msmtp_cfg_file"
 
-	if [ "$security" == "starttls" ] || [ "$security" == "ssl" ]; then
-		echo "tls on" >> "$msmtp_cfg_file"
-		echo "tls_certcheck off" >> "$msmtp_cfg_file"
+        if [ "$security" == "ssl" ]; then
+                echo "tls on" >> "$msmtp_cfg_file"
+                echo "tls_certcheck off" >> "$msmtp_cfg_file"
+                echo "tls_starttls off" >> "$msmtp_cfg_file"
+        elif [ "$security" == "starttls" ]
+                echo "tls on" >> "$msmtp_cfg_file"
+                echo "tls_certcheck off" >> "$msmtp_cfg_file"
+                echo "tls_starttls on" >> "$msmtp_cfg_file"      
         else
                 echo "tls off" >> "$msmtp_cfg_file"
-	fi
+        fi
+        
+        if [ -n "$username" ] && [ -n "$password" ]; then
+            echo "auth on" >> "$msmtp_cfg_file"
+	    echo "user $username" >> "$msmtp_cfg_file"
+            echo "password $password" >> "$msmtp_cfg_file"
+        else
+            echo "auth off" >> "$msmtp_cfg_file"
+        fi
 
-	echo "port $port" >> "$msmtp_cfg_file"
-	echo "auth on" >> "$msmtp_cfg_file"
-	echo "from $from" >> "$msmtp_cfg_file"
-	echo "user $username" >> "$msmtp_cfg_file"
-	echo "password $password" >> "$msmtp_cfg_file"
-        echo "timeout 30" >> "$msmtp_cfg_file"
+        echo "timeout 5" >> "$msmtp_cfg_file"
 	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
@@ -100,7 +110,7 @@ compose_message() {
 	if [ -f "$msg_file.test" ]; then
 		cat "$locker_stamp/stamps.test" >> "$locker_stamp/stamps"
 
-		cat "$msg_file.restarts" >> "$msg_file.tmp"
+		cat "$msg_file.test" >> "$msg_file.tmp"
 	fi
 	if [ -f "$msg_file.restarts" ]; then
 		cat "$locker_stamp/stamps.restarts" >> "$locker_stamp/stamps"
