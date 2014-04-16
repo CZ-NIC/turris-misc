@@ -105,7 +105,7 @@ compose_message() {
 	if [ -f "$msg_file.test" ]; then
 		cat "$locker_stamp/stamps.test" >> "$locker_stamp/stamps"
 
-		cat "$msg_file.restarts" >> "$msg_file.tmp"
+		cat "$msg_file.test" >> "$msg_file.tmp"
 	fi
 	if [ -f "$msg_file.restarts" ]; then
 		cat "$locker_stamp/stamps.restarts" >> "$locker_stamp/stamps"
