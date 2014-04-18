@@ -39,7 +39,7 @@ trap 'rm "$TEMPFILE"' EXIT INT QUIT TERM
 # Grap current list of processes, strip off the header and keep only the first and last column.
 # Seems like our ps doesn't know how to specify format, so we have to get through the
 # human-friendly crap
-ps | tail -n+2 | sed -e 's/^ *\([0-9][0-9]*\)\(  *[^ ]*\)\{3\} */\1 /'>"$TEMPFILE"
+busybox ps | tail -n+2 | sed -e 's/^ *\([0-9][0-9]*\)\(  *[^ ]*\)\{3\} */\1 /'>"$TEMPFILE"
 
 for SERVICE in $SERVICES ; do
 	# Get the claimed PID of the service
