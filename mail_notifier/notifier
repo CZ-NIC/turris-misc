@@ -72,6 +72,12 @@ compose_message() {
 
 	severity=`uci get user_notify.notifications.severity`
 	news=`uci get user_notify.notifications.news`
+        
+        curr_date=`date -R`
+        date_time=`date +'%y%m%d.%H%M%S'`
+        rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
+        domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
+        msg_id="<$date_time.$rand@$domain>"
 
 	msg_list=`ls "$base_folder"`
 	for msg in $msg_list; do
@@ -146,9 +152,11 @@ compose_message() {
 	fi
 
 	if [ -f "$msg_file.tmp" ]; then
-                echo "To: $mail_to" > "$msg_file"
+                echo "To: $(echo $mail_to | sed 's/ /, /')" > "$msg_file"
                 echo "From: $mail_from" >> "$msg_file"
                 echo "Content-Type: text/plain; charset=UTF-8" >> "$msg_file"
+                echo "Date: $curr_date" >> "$msg_file"
+                echo "Message-ID: $msg_id" >> "$msg_file"
 		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> "$msg_file"
 		cat $msg_file.tmp >> "$msg_file"
 	fi
@@ -189,7 +197,7 @@ send_mail() {
 		mark_msgs
 	        echo "User notifications are not enabled."
 	else
-		cat "$msg_file" | msmtp -C "$msmtp_cfg_file" "$mail_to"
+		cat "$msg_file" | msmtp -C "$msmtp_cfg_file" -t
 		err_lvl=$?
 
 		if [ "$err_lvl" -eq 0 ]; then
