@@ -28,11 +28,13 @@
 # Configuration
 set -ex
 
+ping -c1 -w10 api.turris.cz || true # Kick the resolution in early, giving unbound little bit more time
+
 # Download CRL for curl.
 get-api-crl
 
 # List of daemon names. Separate by \|, it's put into the regular expression.
-DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola\|nethist'
+DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola\|nethist\|logsend'
 
 BRANCH=$(getbranch || echo 'unknown')
 
@@ -48,7 +50,9 @@ CERT="/etc/ssl/startcom.pem"
 CRL="/etc/ssl/crl.pem"
 TMPFILE="/tmp/logsend.tmp"
 BUFFER="/tmp/logsend.buffer"
-trap 'rm -f "$TMPFILE" "$BUFFER"' EXIT ABRT QUIT TERM
+LOGFILE="/tmp/logsend.log"
+rm -f "$LOGFILE"
+trap 'rm -f "$TMPFILE" "$BUFFER" "$LOGFILE"' EXIT ABRT QUIT TERM
 
 # Don't load the server all at once. With NTP-synchronized time, and
 # thousand clients, it would make spikes on the CPU graph and that's not
@@ -56,6 +60,7 @@ trap 'rm -f "$TMPFILE" "$BUFFER"' EXIT ABRT QUIT TERM
 sleep $(( $(tr -cd 0-9 </dev/urandom | head -c 8 | sed -e 's/^0*//' ) % 120 ))
 
 cp /tmp/logs.last.sha1 "$TMPFILE" || true
+set +e
 # Grep regexp: Month date time hostname daemon
 # tail ‒ limit the size of upload
 (
@@ -67,7 +72,12 @@ cp /tmp/logs.last.sha1 "$TMPFILE" || true
 	tail -n 10000 >"$BUFFER"
 
 (
-	atsha204cmd file-challenge-response <"$BUFFER"
+	atsha204cmd file-challenge-response <"$BUFFER" 2>>"$LOGFILE"
 	cat "$BUFFER"
-) | curl --compress --cacert "$CERT" --crlfile "$CRL" -T - "$BASEURL$RID" -X POST -f
-mv "$TMPFILE" /tmp/logs.last.sha1
+) | curl --compress --cacert "$CERT" --crlfile "$CRL" -T - "$BASEURL$RID" -X POST -f 2>>"$LOGFILE"
+if [ "$?" = 0 ] ; then
+	mv "$TMPFILE" /tmp/logs.last.sha1
+fi
+if [ -f "$LOGFILE" ] ; then
+	logger -t logsend -p daemon.error <"$LOGFILE"
+fi
