@@ -1,2 +1,2 @@
 MAILTO=""
-5     *       *       *       *       root	/usr/bin/logsend.sh
+20     *       *       *       *       root	/usr/bin/logsend.sh
