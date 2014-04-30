@@ -31,40 +31,40 @@ create_msmtp_config() {
 	echo "port $port" >> "$msmtp_cfg_file"
 	echo "from $from" >> "$msmtp_cfg_file"
 
-        if [ "$security" = "ssl" ]; then
-                echo "tls on" >> "$msmtp_cfg_file"
-                echo "tls_certcheck off" >> "$msmtp_cfg_file"
-                echo "tls_starttls off" >> "$msmtp_cfg_file"
-        elif [ "$security" = "starttls" ] ; then
-                echo "tls on" >> "$msmtp_cfg_file"
-                echo "tls_certcheck off" >> "$msmtp_cfg_file"
-                echo "tls_starttls on" >> "$msmtp_cfg_file"      
-        else
-                echo "tls off" >> "$msmtp_cfg_file"
-        fi
-        
-        if [ -n "$username" ] && [ -n "$password" ]; then
-            echo "auth on" >> "$msmtp_cfg_file"
-	    echo "user $username" >> "$msmtp_cfg_file"
-            echo "password $password" >> "$msmtp_cfg_file"
-        else
-            echo "auth off" >> "$msmtp_cfg_file"
-        fi
+	if [ "$security" = "ssl" ]; then
+		echo "tls on" >> "$msmtp_cfg_file"
+		echo "tls_certcheck off" >> "$msmtp_cfg_file"
+		echo "tls_starttls off" >> "$msmtp_cfg_file"
+	elif [ "$security" = "starttls" ] ; then
+		echo "tls on" >> "$msmtp_cfg_file"
+		echo "tls_certcheck off" >> "$msmtp_cfg_file"
+		echo "tls_starttls on" >> "$msmtp_cfg_file"	  
+	else
+		echo "tls off" >> "$msmtp_cfg_file"
+	fi
+	
+	if [ -n "$username" ] && [ -n "$password" ]; then
+		echo "auth on" >> "$msmtp_cfg_file"
+		echo "user $username" >> "$msmtp_cfg_file"
+		echo "password $password" >> "$msmtp_cfg_file"
+	else
+		echo "auth off" >> "$msmtp_cfg_file"
+	fi
 
-        echo "timeout 5" >> "$msmtp_cfg_file"
+	echo "timeout 5" >> "$msmtp_cfg_file"
 	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
 schedule_restart() {
-        max_delay=10 
+	max_delay=10 
 	delay=`uci get user_notify.reboot.delay`
 	time=`uci get user_notify.reboot.time | tr -d ':'`
 
-        if [ $delay -gt $max_delay ]; then
-            delay=$max_delay
-            uci set user_notify.reboot.delay=$max_delay
-            uci commit
-        fi
+	if [ $delay -gt $max_delay ]; then
+		delay=$max_delay
+		uci set user_notify.reboot.delay=$max_delay
+		uci commit
+	fi
 
 	curr_time=`date '+%y%m%d'`
 	wanted_time="$((curr_time + delay))$time"
@@ -79,12 +79,12 @@ compose_message() {
 
 	severity=`uci get user_notify.notifications.severity`
 	news=`uci get user_notify.notifications.news`
-        
-        curr_date=`date -R`
-        date_time=`date +'%y%m%d.%H%M%S'`
-        rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
-        domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
-        msg_id="<$date_time.$rand@$domain>"
+	
+	curr_date=`date -R`
+	date_time=`date +'%y%m%d.%H%M%S'`
+	rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
+	domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
+	msg_id="<$date_time.$rand@$domain>"
 
 	msg_list=`ls "$base_folder"`
 	for msg in $msg_list; do
@@ -96,14 +96,14 @@ compose_message() {
 
 			case "$msg_severity" in
 				"restart") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.restarts"
-					   echo "$msg" >> "$locker_stamp/stamps.restarts"
-					   ;;
+					echo "$msg" >> "$locker_stamp/stamps.restarts"
+					;;
 				"error") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.errors"
-				         echo "$msg" >> "$locker_stamp/stamps.errors"
-					 ;;
+					echo "$msg" >> "$locker_stamp/stamps.errors"
+					;;
 				"update") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.updates"
-					  echo "$msg" >> "$locker_stamp/stamps.updates"
-					  ;;
+					echo "$msg" >> "$locker_stamp/stamps.updates"
+					;;
 				"news") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.news"
 					echo "$msg" >> "$locker_stamp/stamps.news"
 					;;
@@ -111,7 +111,7 @@ compose_message() {
 					echo "$msg" >> "$locker_stamp/stamps.test"
 					;;
 				*) echo "Unknown severity: $msg_severity"
-				   ;;
+				;;
 			esac
 		fi
 	done
@@ -159,11 +159,11 @@ compose_message() {
 	fi
 
 	if [ -f "$msg_file.tmp" ]; then
-                echo "To: $(echo $mail_to | sed 's/ /, /')" > "$msg_file"
-                echo "From: $mail_from" >> "$msg_file"
-                echo "Content-Type: text/plain; charset=UTF-8" >> "$msg_file"
-                echo "Date: $curr_date" >> "$msg_file"
-                echo "Message-ID: $msg_id" >> "$msg_file"
+		echo "To: $(echo $mail_to | sed 's/ /, /')" > "$msg_file"
+		echo "From: $mail_from" >> "$msg_file"
+		echo "Content-Type: text/plain; charset=UTF-8" >> "$msg_file"
+		echo "Date: $curr_date" >> "$msg_file"
+		echo "Message-ID: $msg_id" >> "$msg_file"
 		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> "$msg_file"
 		cat $msg_file.tmp >> "$msg_file"
 	fi
@@ -190,7 +190,7 @@ send_mail() {
 	lock "$locker_stamp"
 	trap 'unlock "$locker_stamp"' EXIT ABRT QUIT TERM
 
-        create_msmtp_config
+	create_msmtp_config
 	compose_message
 
 	if [ ! -f "$msg_file" ]; then
@@ -202,17 +202,17 @@ send_mail() {
 
 	if [ "$smtp_enabled" -eq 0 ]; then
 		mark_msgs
-	        echo "User notifications are not enabled."
+		echo "User notifications are not enabled."
 	else
 		cat "$msg_file" | msmtp -C "$msmtp_cfg_file" -t
 		err_lvl=$?
 
 		if [ "$err_lvl" -eq 0 ]; then
-                    mark_msgs
-                else
-                    unlock "$locker_stamp"
-                    exit "$err_lvl"
-                fi
+			mark_msgs
+		else
+			unlock "$locker_stamp"
+			exit "$err_lvl"
+		fi
 	fi
 
 	unlock "$locker_stamp"
