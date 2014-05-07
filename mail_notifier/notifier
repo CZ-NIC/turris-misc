@@ -59,15 +59,18 @@ schedule_restart() {
 	max_delay=10 
 	delay=`uci get user_notify.reboot.delay`
 	time=`uci get user_notify.reboot.time | tr -d ':'`
+	curr_time=`date +"%H%M"`
 
 	if [ $delay -gt $max_delay ]; then
 		delay=$max_delay
 		uci set user_notify.reboot.delay=$max_delay
 		uci commit
+	elif [ $delay -le 0 ] && [ $curr_time -ge $time ]; then
+		delay=1
 	fi
 
-	curr_time=`date '+%y%m%d'`
-	wanted_time="$((curr_time + delay))$time"
+	curr_date=`date '+%y%m%d'`
+	wanted_time="$(($curr_date + $delay))$time"
 
 	echo "reboot" | at -t $(date +"%y%m%d%H%M" -d "$wanted_time")
 	echo -e "Zarizeni bude automaticky restartovano v $(date +'%H:%M %d.%m.%Y' -d $wanted_time).\n" >> $1
