@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/busybox ash
 
 # Copyright (c) 2013-2014, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
@@ -28,7 +28,7 @@
 set -ex
 
 # Configuration
-SERVICES="ucollect"
+SERVICES="ucollect unbound"
 if [ -e '/etc/init.d/nethist' ] ; then
 	SERVICES="$SERVICES nethist"
 fi
@@ -45,8 +45,14 @@ for SERVICE in $SERVICES ; do
 	# Get the claimed PID of the service
 	PID=`cat /var/run/"$SERVICE".pid || echo 'No such PID available'`
 	FILE=/tmp/watchdog-"$SERVICE"-missing
+	EXTRA=true # In case unbound is running but not working, try to reset it
+	if [ "$SERVICE" = "unbound" ] ; then
+		if ! ping -c 2 turris.cz ; then
+			EXTRA=false
+		fi
+	fi
 	# Look if there's a process with such name and PID in as reliable way as shell allows
-	if grep "^$PID " "$TEMPFILE" | sed -e 's/^[^ ]*//' | grep "$SERVICE">/dev/null ; then
+	if grep "^$PID " "$TEMPFILE" | sed -e 's/^[^ ]*//' | grep "$SERVICE">/dev/null && $EXTRA ; then
 		# It runs. Remove any possible missing note from previous run.
 		rm -f "$FILE"
 	else
