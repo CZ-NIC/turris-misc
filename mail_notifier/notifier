@@ -19,12 +19,12 @@ mail_to=`uci get user_notify.smtp.to`
 mail_from=`uci get user_notify.smtp.from`
 
 create_msmtp_config() {
-	username=`uci get user_notify.smtp.username 2>/dev/null`
-	password=`uci get user_notify.smtp.password 2>/dev/null`
-	server=`uci get user_notify.smtp.server`
-	port=`uci get user_notify.smtp.port`
-	security=`uci get user_notify.smtp.security`
-	from=`uci get user_notify.smtp.from`
+	local username=`uci get user_notify.smtp.username 2>/dev/null`
+	local password=`uci get user_notify.smtp.password 2>/dev/null`
+	local server=`uci get user_notify.smtp.server`
+	local port=`uci get user_notify.smtp.port`
+	local security=`uci get user_notify.smtp.security`
+	local from=`uci get user_notify.smtp.from`
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	echo "host $server" >> "$msmtp_cfg_file"
@@ -56,18 +56,21 @@ create_msmtp_config() {
 }
 
 schedule_restart() {
-	max_delay=10 
-	delay=`uci get user_notify.reboot.delay`
-	time=`uci get user_notify.reboot.time | tr -d ':'`
+	local max_delay=10 
+	local delay=`uci get user_notify.reboot.delay`
+	local time=`uci get user_notify.reboot.time | tr -d ':'`
+	local curr_time=`date +"%H%M"`
 
 	if [ $delay -gt $max_delay ]; then
 		delay=$max_delay
 		uci set user_notify.reboot.delay=$max_delay
 		uci commit
+	elif [ $delay -le 0 ] && [ $curr_time -ge $time ]; then
+		delay=1
 	fi
 
-	curr_time=`date '+%y%m%d'`
-	wanted_time="$((curr_time + delay))$time"
+	local curr_date=`date '+%y%m%d'`
+	local wanted_time="$(($curr_date + $delay))$time"
 
 	echo "reboot" | at -t $(date +"%y%m%d%H%M" -d "$wanted_time")
 	echo -e "Zarizeni bude automaticky restartovano v $(date +'%H:%M %d.%m.%Y' -d $wanted_time).\n" >> $1
@@ -77,22 +80,22 @@ compose_message() {
 	rm -rf "$msg_file"* > /dev/null 2>&1 || true
 	rm -rf "$locker_stamp/stamps"* > /dev/null 2>&1 || true
 
-	severity=`uci get user_notify.notifications.severity`
-	news=`uci get user_notify.notifications.news`
+	local severity=`uci get user_notify.notifications.severity`
+	local news=`uci get user_notify.notifications.news`
 	
-	curr_date=`date -R`
-	date_time=`date +'%y%m%d.%H%M%S'`
-	rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
-	domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
-	msg_id="<$date_time.$rand@$domain>"
+	local curr_date=`date -R`
+	local date_time=`date +'%y%m%d.%H%M%S'`
+	local rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
+	local domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
+	local msg_id="<$date_time.$rand@$domain>"
 
-	msg_list=`ls "$base_folder"`
+	local msg_list=`ls "$base_folder"`
 	for msg in $msg_list; do
 		echo "Working on message: $msg"
 		[ -f "$base_folder/$msg/$mail_stamp" ] && continue
 
 		if [ -f "$base_folder/$msg/severity" ]; then
-			msg_severity=`cat "$base_folder/$msg/severity"`
+			local msg_severity=`cat "$base_folder/$msg/severity"`
 
 			case "$msg_severity" in
 				"restart") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.restarts"
@@ -205,7 +208,7 @@ send_mail() {
 		echo "User notifications are not enabled."
 	else
 		cat "$msg_file" | msmtp -C "$msmtp_cfg_file" -t
-		err_lvl=$?
+		local err_lvl=$?
 
 		if [ "$err_lvl" -eq 0 ]; then
 			mark_msgs
