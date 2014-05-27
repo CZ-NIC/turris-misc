@@ -74,7 +74,7 @@ set +e
 (
 	atsha204cmd file-challenge-response <"$BUFFER" 2>>"$LOGFILE"
 	cat "$BUFFER"
-) | curl -# --compress --cacert "$CERT" --crlfile "$CRL" -T - "$BASEURL$RID" -X POST -f 2>>"$LOGFILE"
+) | curl --compress --cacert "$CERT" --crlfile "$CRL" -T - "$BASEURL$RID" -X POST -f 2>>"$LOGFILE"
 if [ "$?" = 0 ] ; then
 	mv "$TMPFILE" /tmp/logs.last.sha1
 fi
