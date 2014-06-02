@@ -7,8 +7,13 @@ if [ -f /tmp/crl.pem ] && [ "$((`date +%s`-4*3600))" -lt "$((`date -r /tmp/crl.p
 	exit
 fi
 
+if [ -d /tmp/crldown ] && [ "$((`date +%s`-3600))" -lt "$((`date -r /tmp/crldown +%s`))" ] ; then
+	# If there's a really old stray lock, get rid of it.
+	rm -rf /tmp/crldown
+fi
+
 mkdir /tmp/crldown
-trap 'rm -rf /tmp/crldown' EXIT ABRT QUIT TERM
+trap 'rm -rf /tmp/crldown' EXIT ABRT QUIT TERM INT
 cd /tmp/crldown
 
 echo | openssl s_client -connect api.turris.cz:443 -showcerts | awk -v c=-1 '/-----BEGIN CERTIFICATE-----/{inc=1;c++} inc {print > (c ".pem")}'
