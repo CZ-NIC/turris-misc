@@ -7,7 +7,7 @@ if [ -f /tmp/crl.pem ] && [ "$((`date +%s`-4*3600))" -lt "$((`date -r /tmp/crl.p
 	exit
 fi
 
-if [ -d /tmp/crldown ] && [ "$((`date +%s`-3600))" -lt "$((`date -r /tmp/crldown +%s`))" ] ; then
+if [ -d /tmp/crldown ] && [ "$((`date +%s`-3600))" -gt "$((`date -r /tmp/crldown +%s`))" ] ; then
 	# If there's a really old stray lock, get rid of it.
 	rm -rf /tmp/crldown
 fi
