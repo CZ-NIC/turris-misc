@@ -1,26 +1,23 @@
 #!/bin/sh
 
-set -ex
+DIR="/tmp/crldown.$$"
 
 # The time of 4 hours should be enough for the CRL not to time out. Hopefuly.
 if [ -f /tmp/crl.pem ] && [ "$((`date +%s`-4*3600))" -lt "$((`date -r /tmp/crl.pem +%s`))" ] ; then
 	exit
 fi
 
-if [ -d /tmp/crldown ] && [ "$((`date +%s`-3600))" -gt "$((`date -r /tmp/crldown +%s`))" ] ; then
-	# If there's a really old stray lock, get rid of it.
-	rm -rf /tmp/crldown
+mkdir "$DIR"
+trap 'rm -rf "$DIR"' EXIT ABRT QUIT TERM INT
+cd "$DIR"
+
+echo | openssl s_client -connect api.turris.cz:443 -showcerts 2>/dev/null | awk -v c=-1 '/-----BEGIN CERTIFICATE-----/{inc=1;c++} inc {print > (c ".pem")}'
+
+if [ -e 0.pem ] ; then
+	for i in *.pem ; do
+		# This is a hack a bit, we expect the hostname to be crl\. something. Our CA satisfies this now and if it breaks, we would find out.
+		openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl -s -S | openssl crl -inform der -out tmp.pem
+		cat tmp.pem >>out.pem
+	done
+	mv out.pem /tmp/crl.pem
 fi
-
-mkdir /tmp/crldown
-trap 'rm -rf /tmp/crldown' EXIT ABRT QUIT TERM INT
-cd /tmp/crldown
-
-echo | openssl s_client -connect api.turris.cz:443 -showcerts | awk -v c=-1 '/-----BEGIN CERTIFICATE-----/{inc=1;c++} inc {print > (c ".pem")}'
-
-for i in *.pem ; do
-	# This is a hack a bit, we expect the hostname to be crl\. something. Our CA satisfies this now and if it breaks, we would find out.
-	openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl -s -S | openssl crl -inform der -out tmp.pem
-	cat tmp.pem >>out.pem
-done
-mv out.pem /tmp/crl.pem
