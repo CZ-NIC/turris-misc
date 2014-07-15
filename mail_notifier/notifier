@@ -16,6 +16,7 @@ mail_stamp="sent_by_email"
 
 smtp_enabled=`uci get user_notify.smtp.enable`
 mail_to=`uci get user_notify.smtp.to`
+mail_from=`uci get user_notify.smtp.from`
 
 create_msmtp_config() {
         local turris_smtp=`uci get user_notify.smtp.use_turris_smtp`
@@ -33,7 +34,7 @@ create_msmtp_config() {
 }
 
 use_turris_smtp() {
-        mail_from="$(uci get system.@system[0].hostname)@notify.turris.cz"
+        mail_from="$(echo $mail_from | cut -d '@' -f1)@notify.turris.cz"
         local username=`atsha204cmd serial-number`
         local password=`echo "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef" \
                         | atsha204cmd challenge-response \
@@ -55,7 +56,6 @@ use_turris_smtp() {
 }
 
 parse_user_server_setting() {
-	mail_from=`uci get user_notify.smtp.from`
 	local username=`uci get user_notify.smtp.username 2>/dev/null`
 	local password=`uci get user_notify.smtp.password 2>/dev/null`
 	local server=`uci get user_notify.smtp.server`
