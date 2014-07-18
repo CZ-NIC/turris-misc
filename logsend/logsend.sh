@@ -57,7 +57,9 @@ trap 'rm -f "$TMPFILE" "$BUFFER" "$LOGFILE"' EXIT ABRT QUIT TERM
 # Don't load the server all at once. With NTP-synchronized time, and
 # thousand clients, it would make spikes on the CPU graph and that's not
 # nice.
-sleep $(( $(tr -cd 0-9 </dev/urandom | head -c 8 | sed -e 's/^0*//' ) % 120 ))
+if [ "$1" != -n ] ; then
+	sleep $(( $(tr -cd 0-9 </dev/urandom | head -c 8 | sed -e 's/^0*//' ) % 120 ))
+fi
 
 cp /tmp/logs.last.sha1 "$TMPFILE" || true
 set +e
