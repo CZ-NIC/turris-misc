@@ -105,7 +105,7 @@ schedule_restart() {
 	local wanted_time="$(($curr_date + $delay))$time"
 
 	echo "reboot" | at -t $(date +"%y%m%d%H%M" -d "$wanted_time")
-	echo -e "Zarizeni bude automaticky restartovano v $(date +'%H:%M %d.%m.%Y' -d $wanted_time).\n" >> $1
+	echo -e "Zařízení bude automaticky restartováno dne $(date +'%d. %m. %Y v %H:%M' -d $wanted_time).\n" >> $1
 }
 
 compose_message() {
@@ -164,7 +164,7 @@ compose_message() {
 		cat "$locker_stamp/stamps.restarts" >> "$locker_stamp/stamps"
 
 		if [ "$severity" -ge 1 ]; then
-			echo -e "##### Zadosti o restart zarizeni #####" >> "$msg_file.tmp"
+			echo -e "##### Žádosti o restart zařízení #####" >> "$msg_file.tmp"
 			cat "$msg_file.restarts" >> "$msg_file.tmp"
 		fi
 	fi
@@ -172,7 +172,7 @@ compose_message() {
 		cat "$locker_stamp/stamps.errors" >> "$locker_stamp/stamps"
 
 		if [ "$severity" -ge 2 ]; then
-			echo -e "##### Oznameni o chybach #####" >> "$msg_file.tmp"
+			echo -e "##### Oznámení o chybách #####" >> "$msg_file.tmp"
 			cat "$msg_file.errors" >> "$msg_file.tmp"
 		fi
 	fi
@@ -180,7 +180,7 @@ compose_message() {
 		cat "$locker_stamp/stamps.updates" >> "$locker_stamp/stamps"
 
 		if [ "$severity" -ge 3 ]; then
-			echo -e "##### Oznameni o aktualizacich #####" >> "$msg_file.tmp"
+			echo -e "##### Oznámení o aktualizacích #####" >> "$msg_file.tmp"
 			cat "$msg_file.updates" >> "$msg_file.tmp"
 		fi
 	fi
@@ -188,7 +188,7 @@ compose_message() {
 		cat "$locker_stamp/stamps.news" >> "$locker_stamp/stamps"
 
 		if [ "$news" -gt 0 ]; then
-			echo -e "##### Oznameni o novinkach #####" >> "$msg_file.tmp"
+			echo -e "##### Oznámení o novinkách #####" >> "$msg_file.tmp"
 			cat "$msg_file.news" >> "$msg_file.tmp"
 		fi
 	fi
@@ -199,7 +199,7 @@ compose_message() {
 		echo "Content-Type: text/plain; charset=UTF-8" >> "$msg_file"
 		echo "Date: $curr_date" >> "$msg_file"
 		echo "Message-ID: $msg_id" >> "$msg_file"
-		echo -e "Subject: Upozorneni od Vaseho routeru Turris\n" >> "$msg_file"
+		echo -e "Subject: =?utf-8?Q?Upozorn=C4=9Bn=C3=AD od Va=C5=A1eho routeru Turris?=\n" >> "$msg_file"
 		cat $msg_file.tmp >> "$msg_file"
 	fi
 
