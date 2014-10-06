@@ -5,7 +5,7 @@ base_dir=/tmp/user_notify
 usage() {
 	echo "This program serves for creating messages which will be send to the user."
 	echo "Usage:"
-	echo -e "\t $0 -s [restart,error,upate,news] 'text of the message'"
+	echo -e "\t $0 -s [restart,error,update,news] 'text of the message'"
 }
 
 trigger=false
