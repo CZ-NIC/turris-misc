@@ -28,10 +28,13 @@
 set -ex
 
 # Configuration
+COND_SERVICES="nethist lcollect"
 SERVICES="ucollect unbound"
-if [ -e '/etc/init.d/nethist' ] ; then
-	SERVICES="$SERVICES nethist"
-fi
+for S in $COND_SERVICES ; do
+	if test -x "/etc/init.d/$S" && "/etc/init.d/$S" enabled ; then
+		SERVICES="$SERVICES $S"
+	fi
+done
 TEMPFILE=/tmp/watchdog.tmp.$$
 
 trap 'rm "$TEMPFILE"' EXIT INT QUIT TERM
