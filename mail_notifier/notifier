@@ -23,7 +23,7 @@ create_msmtp_config() {
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	
-        if [ -n $turris_smtp ] && [ $turris_smtp = "1" ] && [ $turris_smtp = "1" ]; then
+        if [ -n "$turris_smtp" ] && [ "$turris_smtp" = "1" ]; then
            use_turris_smtp 
         else
             parse_user_server_setting
