@@ -39,7 +39,7 @@ fi
 
 message="$3"
 # This should be unique
-msg_id="$(date +%s)-$$"
+msg_id="$(/bin/busybox date +%s)-$$"
 
 mkdir -p "$base_dir"
 mkdir "$base_dir/tmp.$msg_id"
