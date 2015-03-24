@@ -1,6 +1,7 @@
 #!/bin/sh
 
 base_folder=/tmp/user_notify
+date_cmd="/bin/busybox date"
 
 if [ "$1" = "-d" ] ; then
 	base_folder="$2"
@@ -23,7 +24,7 @@ create_msmtp_config() {
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	
-        if [ -n $turris_smtp ] && [ $turris_smtp = "1" ] && [ $turris_smtp = "1" ]; then
+        if [ -n "$turris_smtp" ] && [ "$turris_smtp" = "1" ]; then
            use_turris_smtp 
         else
             parse_user_server_setting
@@ -91,7 +92,7 @@ schedule_restart() {
 	local max_delay=10 
 	local delay=`uci get user_notify.reboot.delay`
 	local time=`uci get user_notify.reboot.time | tr -d ':'`
-	local curr_time=`date +"%H%M"`
+	local curr_time=`$date_cmd +"%H%M"`
 
 	if [ $delay -gt $max_delay ]; then
 		delay=$max_delay
@@ -101,11 +102,11 @@ schedule_restart() {
 		delay=1
 	fi
 
-	local curr_date=`date '+%y%m%d'`
+	local curr_date=`$date_cmd '+%y%m%d'`
 	local wanted_time="$(($curr_date + $delay))$time"
 
-	echo "reboot" | at -t $(date +"%y%m%d%H%M" -d "$wanted_time")
-	echo -e "Zařízení bude automaticky restartováno dne $(date +'%d. %m. %Y v %H:%M' -d $wanted_time).\n" >> $1
+	echo "reboot" | at -t $($date_cmd +"%y%m%d%H%M" -d "$wanted_time")
+	echo -e "Zařízení bude automaticky restartováno dne $($date_cmd +'%d. %m. %Y v %H:%M' -d $wanted_time).\n" >> $1
 }
 
 compose_message() {
@@ -115,8 +116,8 @@ compose_message() {
 	local severity=`uci get user_notify.notifications.severity`
 	local news=`uci get user_notify.notifications.news`
 	
-	local curr_date=`date -R`
-	local date_time=`date +'%y%m%d.%H%M%S'`
+	local curr_date=`$date_cmd -R`
+	local date_time=`$date_cmd +'%y%m%d.%H%M%S'`
 	local rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
 	local domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
 	local msg_id="<$date_time.$rand@$domain>"
