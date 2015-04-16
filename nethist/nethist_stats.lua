@@ -144,7 +144,7 @@ function main()
 	-- Check if exists nethist output, otherwise is nothing to do
 	local nethist_file = io.open(HIST_FILE);
 	if not nethist_file then
-		io.stderr:write("Nethist file doesn't exists.");
+		io.stderr:write("Nethist file doesn't exists.\n");
 		os.exit(1);
 	end
 
