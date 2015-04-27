@@ -41,11 +41,26 @@ local function stats_init()
 	stats['fs_avg'] = 0;
 	stats['fs_sum'] = 0;
 	stats['fs_samples'] = 0;
-	stats['mem_min'] = 1/0;
-	stats['mem_max'] = 0;
-	stats['mem_avg'] = 0;
-	stats['mem_sum'] = 0;
-	stats['mem_samples'] = 0;
+	stats['mem_total_min'] = 1/0;
+	stats['mem_total_max'] = 0;
+	stats['mem_total_avg'] = 0;
+	stats['mem_total_sum'] = 0;
+	stats['mem_total_samples'] = 0;
+	stats['mem_free_min'] = 1/0;
+	stats['mem_free_max'] = 0;
+	stats['mem_free_avg'] = 0;
+	stats['mem_free_sum'] = 0;
+	stats['mem_free_samples'] = 0;
+	stats['mem_buffers_min'] = 1/0;
+	stats['mem_buffers_max'] = 0;
+	stats['mem_buffers_avg'] = 0;
+	stats['mem_buffers_sum'] = 0;
+	stats['mem_buffers_samples'] = 0;
+	stats['mem_cached_min'] = 1/0;
+	stats['mem_cached_max'] = 0;
+	stats['mem_cached_avg'] = 0;
+	stats['mem_cached_sum'] = 0;
+	stats['mem_cached_samples'] = 0;
 	stats['load_min'] = 1/0;
 	stats['load_max'] = 0;
 	stats['load_avg'] = 0;
@@ -108,11 +123,26 @@ local function stats_update(stats, file)
 				stats['fs_sum'] = stats['fs_sum'] + val;
 				stats['fs_samples'] = stats['fs_samples'] + 1;
 			elseif items[2] == "memory" and items[3] ~= "0" and items[4] ~= "0" then
-				local val = tonumber(items[4]);
-				if val < stats['mem_min'] then stats['mem_min'] = val; end;
-				if val > stats['mem_max'] then stats['mem_max'] = val; end;
-				stats['mem_sum'] = stats['mem_sum'] + val;
-				stats['mem_samples'] = stats['mem_samples'] + 1;
+				local total = tonumber(items[3]);
+				local free = tonumber(items[4]);
+				local buffers = tonumber(items[5]);
+				local cached = tonumber(items[6]);
+				if total < stats['mem_total_min'] then stats['mem_total_min'] = total; end;
+				if total > stats['mem_total_max'] then stats['mem_total_max'] = total; end;
+				stats['mem_total_sum'] = stats['mem_total_sum'] + total;
+				stats['mem_total_samples'] = stats['mem_total_samples'] + 1;
+				if free < stats['mem_free_min'] then stats['mem_free_min'] = free; end;
+				if free > stats['mem_free_max'] then stats['mem_free_max'] = free; end;
+				stats['mem_free_sum'] = stats['mem_free_sum'] + free;
+				stats['mem_free_samples'] = stats['mem_free_samples'] + 1;
+				if buffers < stats['mem_buffers_min'] then stats['mem_buffers_min'] = buffers; end;
+				if buffers > stats['mem_buffers_max'] then stats['mem_buffers_max'] = buffers; end;
+				stats['mem_buffers_sum'] = stats['mem_buffers_sum'] + buffers;
+				stats['mem_buffers_samples'] = stats['mem_buffers_samples'] + 1;
+				if cached < stats['mem_cached_min'] then stats['mem_cached_min'] = cached; end;
+				if cached > stats['mem_cached_max'] then stats['mem_cached_max'] = cached; end;
+				stats['mem_cached_sum'] = stats['mem_cached_sum'] + cached;
+				stats['mem_cached_samples'] = stats['mem_cached_samples'] + 1;
 			elseif items[2] == "temperature" and items[3] ~= "0" and items[4] ~= "0" then
 				local val = tonumber(items[3]); -- Board column
 				if val < stats['temp_board_min'] then stats['temp_board_min'] = val; end;
@@ -133,7 +163,10 @@ local function stats_update(stats, file)
 	-- Update averages
 	stats['load_avg'] = stats['load_sum'] / stats['load_samples'];
 	stats['fs_avg'] = stats['fs_sum'] / stats['fs_samples'];
-	stats['mem_avg'] = stats['mem_sum'] / stats['mem_samples'];
+	stats['mem_total_avg'] = stats['mem_total_sum'] / stats['mem_total_samples'];
+	stats['mem_free_avg'] = stats['mem_free_sum'] / stats['mem_free_samples'];
+	stats['mem_buffers_avg'] = stats['mem_buffers_sum'] / stats['mem_buffers_samples'];
+	stats['mem_cached_avg'] = stats['mem_cached_sum'] / stats['mem_cached_samples'];
 	stats['temp_board_avg'] = stats['temp_board_sum'] / stats['temp_board_samples'];
 	stats['temp_cpu_avg'] = stats['temp_cpu_sum'] / stats['temp_cpu_samples'];
 
@@ -144,7 +177,7 @@ function main()
 	-- Check if exists nethist output, otherwise is nothing to do
 	local nethist_file = io.open(HIST_FILE);
 	if not nethist_file then
-		io.stderr:write("Nethist file doesn't exists.");
+		io.stderr:write("Nethist file doesn't exists.\n");
 		os.exit(1);
 	end
 

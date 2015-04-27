@@ -3,3 +3,27 @@ nethist
 
 Daemon that stores network throughput into a ringbuffer, so user can request a
 graph of activity some time back.
+
+Daemon generates every 3 second CSV-like file /tmp/network with timestamped
+values of some interesting indicators.
+
+There are few types of rows:
+
+<timestamp>,network,<interface_name>,<received_bytes>,<transmitted_bytes>
+	- Source: /proc/net/dev
+	- Unit: bytes
+
+<timestamp>,cpu,<current_load>
+	- Source: /proc/loadavg
+
+<timestamp>,memory,<memtotal>,<memfree>,<buffers>,<cached>
+	- Source: /proc/meminfo
+	- Unit: kbytes
+
+<timestamp>,temperature,<board>,<cpu>
+	- Source: I2C thermometer
+	- Unit: °C
+
+<timestamp>,fs,<used>,<evailable>
+	- Source: command df
+	- Unit: 1k-blocks
