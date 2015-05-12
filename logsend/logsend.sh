@@ -34,7 +34,7 @@ ping -c1 -w10 api.turris.cz || true # Kick the resolution in early, giving unbou
 get-api-crl
 
 # List of daemon names. Separate by \|, it's put into the regular expression.
-DAEMONS='ucollect\|updater\|watchdog\|oneshot\|nikola\|nethist\|logsend\|turris-firewall-rules'
+DAEMONS='ucollect\|updater\|updater-hash-check\|watchdog\|oneshot\|nikola\|nethist\|logsend\|turris-firewall-rules'
 
 BRANCH=$(getbranch || echo 'unknown')
 
