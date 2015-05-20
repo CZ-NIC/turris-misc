@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 DIR="/tmp/crldown.$$"
 
 # The time of 4 hours should be enough for the CRL not to time out. Hopefuly.
@@ -17,6 +19,7 @@ if [ -e 0.pem ] ; then
 	for i in *.pem ; do
 		# This is a hack a bit, we expect the hostname to be crl\. something. Our CA satisfies this now and if it breaks, we would find out.
 		openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl -s -S | openssl crl -inform der -out tmp.pem
+		test -s tmp.pem
 		cat tmp.pem >>out.pem
 	done
 	mv out.pem /tmp/crl.pem
