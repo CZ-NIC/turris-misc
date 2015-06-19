@@ -28,7 +28,7 @@
 set -e
 
 purge_dir() {
-	find "$1" -mtime +"$2" -delete
+	find data/"$1" -mtime +"$2" -delete
 }
 
 purge_dir turris 8
