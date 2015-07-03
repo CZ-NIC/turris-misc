@@ -31,7 +31,7 @@ set -e
 read DIRECTORY
 cd data/"$DIRECTORY"
 DATE="$(date +%Y-%m-%d-%H-%M)"
-NAME="$DATE".bz2.gpg
+NAME="$DIRECTORY"_"$DATE".bz2.gpg
 touch "$NAME"
 chmod 0600 "$NAME"
 cat >"$NAME"
