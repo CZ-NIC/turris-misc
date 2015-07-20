@@ -28,7 +28,7 @@
 set -e
 
 purge_dir() {
-	find data/"$1" -mtime +"$2" -delete
+	find data/"$1" -type f -mtime +"$2" -delete
 }
 
 purge_dir archive 30
