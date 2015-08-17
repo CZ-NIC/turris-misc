@@ -18,6 +18,7 @@ mail_stamp="sent_by_email"
 smtp_enabled=`uci get user_notify.smtp.enable`
 mail_to=`uci get user_notify.smtp.to`
 mail_from=`uci get user_notify.smtp.from`
+lang="cz" # Auto-detect from system configuration somehow?
 
 create_msmtp_config() {
         local turris_smtp=`uci get user_notify.smtp.use_turris_smtp`
@@ -131,19 +132,19 @@ compose_message() {
 			local msg_severity=`cat "$base_folder/$msg/severity"`
 
 			case "$msg_severity" in
-				"restart") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.restarts"
+				"restart") echo -e "$(cat "$base_folder/$msg/message_$lang")\n" >> "$msg_file.restarts"
 					echo "$msg" >> "$locker_stamp/stamps.restarts"
 					;;
-				"error") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.errors"
+				"error") echo -e "$(cat "$base_folder/$msg/message_$lang")\n" >> "$msg_file.errors"
 					echo "$msg" >> "$locker_stamp/stamps.errors"
 					;;
-				"update") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.updates"
+				"update") echo -e "$(cat "$base_folder/$msg/message_$lang")\n" >> "$msg_file.updates"
 					echo "$msg" >> "$locker_stamp/stamps.updates"
 					;;
-				"news") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.news"
+				"news") echo -e "$(cat "$base_folder/$msg/message_$lang")\n" >> "$msg_file.news"
 					echo "$msg" >> "$locker_stamp/stamps.news"
 					;;
-				"test") echo -e "$(cat "$base_folder/$msg/message")\n" >> "$msg_file.test"
+				"test") echo -e "$(cat "$base_folder/$msg/message_$lang")\n" >> "$msg_file.test"
 					echo "$msg" >> "$locker_stamp/stamps.test"
 					;;
 				*) echo "Unknown severity: $msg_severity"

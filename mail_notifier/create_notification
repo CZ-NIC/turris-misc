@@ -37,14 +37,16 @@ else
 	exit 1
 fi
 
-message="$3"
+message_cz="$3"
+message_en="$4"
 # This should be unique
 msg_id="$(/bin/busybox date +%s)-$$"
 
 mkdir -p "$base_dir"
 mkdir "$base_dir/tmp.$msg_id"
 echo "$severity" > "$base_dir/tmp.$msg_id/severity"
-echo "$message" > "$base_dir/tmp.$msg_id/message"
+echo "$message_cz" > "$base_dir/tmp.$msg_id/message_cz"
+echo "$message_en" > "$base_dir/tmp.$msg_id/message_en"
 
 mv "$base_dir/tmp.$msg_id" "$base_dir/$msg_id"
 
