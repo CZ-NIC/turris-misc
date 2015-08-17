@@ -200,7 +200,7 @@ compose_message() {
 		echo "Content-Type: text/plain; charset=UTF-8" >> "$msg_file"
 		echo "Date: $curr_date" >> "$msg_file"
 		echo "Message-ID: $msg_id" >> "$msg_file"
-		echo -e "Subject: =?utf-8?Q?Upozorn=C4=9Bn=C3=AD od Va=C5=A1eho routeru Turris?=\n" >> "$msg_file"
+		echo -e "Subject: =?utf-8?Q?Upozorn=C4=9Bn=C3=AD?= od =?utf-8?Q?Va=C5=A1eho?= routeru Turris\n" >> "$msg_file"
 		cat $msg_file.tmp >> "$msg_file"
 	fi
 
