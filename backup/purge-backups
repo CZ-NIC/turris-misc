@@ -28,16 +28,25 @@
 set -e
 
 purge_dir() {
-	find "$1" -mtime +"$2" -delete
+	find data/"$1" -type f -mtime +"$2" -delete
 }
 
-purge_dir turris 8
+purge_dir archive 30
+purge_dir archive-globals 30
+purge_dir turris 2
+purge_dir turris-globals 2
 purge_dir www 20
+purge_dir www-globals 20
 purge_dir forum 30
 purge_dir operator 30
+purge_dir operator-globals 30
 purge_dir wiki 7
 purge_dir rulez 30
+purge_dir rulez-globals 30
 purge_dir flash 30
 purge_dir lite 10
+purge_dir lite-globals 10
 purge_dir kippo 7
 purge_dir virt 30
+purge_dir os 10
+purge_dir os-db 10

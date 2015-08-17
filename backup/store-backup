@@ -29,9 +29,9 @@ set -e
 
 # The first line of the remote command should be the directory to store to
 read DIRECTORY
-cd "$DIRECTORY"
+cd data/"$DIRECTORY"
 DATE="$(date +%Y-%m-%d-%H-%M)"
-NAME="$DATE".dbdump.bzip2.gpg
+NAME="$DIRECTORY"_"$DATE".bz2.gpg
 touch "$NAME"
 chmod 0600 "$NAME"
 cat >"$NAME"
