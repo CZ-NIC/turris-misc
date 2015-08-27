@@ -18,7 +18,7 @@ mail_stamp="sent_by_email"
 smtp_enabled=`uci get user_notify.smtp.enable`
 mail_to=`uci get user_notify.smtp.to`
 mail_from=`uci get user_notify.smtp.from`
-lang="cz" # Auto-detect from system configuration somehow?
+lang="$(uci get -q foris.settings.lang | echo cs)" # Auto-detect from system configuration somehow?
 
 create_msmtp_config() {
         local turris_smtp=`uci get user_notify.smtp.use_turris_smtp`
