@@ -20,7 +20,7 @@ if [ "$1" = -d ] ; then
 	shift 2
 fi
 
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
 	usage
 	exit 1
 fi
