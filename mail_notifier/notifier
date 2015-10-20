@@ -21,33 +21,33 @@ mail_from=`uci get user_notify.smtp.from`
 lang="$(uci get -q foris.settings.lang || echo cs)" # Auto-detect from system configuration somehow?
 
 create_msmtp_config() {
-        local turris_smtp=`uci get user_notify.smtp.use_turris_smtp`
+	local turris_smtp=`uci get user_notify.smtp.use_turris_smtp`
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	
-        if [ -n "$turris_smtp" ] && [ "$turris_smtp" = "1" ]; then
-           use_turris_smtp 
-        else
-            parse_user_server_setting
-        fi
+	if [ -n "$turris_smtp" ] && [ "$turris_smtp" = "1" ]; then
+	   use_turris_smtp 
+	else
+	    parse_user_server_setting
+	fi
 
 	echo "timeout 5" >> "$msmtp_cfg_file"
 	echo "account default: notifier" >> "$msmtp_cfg_file"
 }
 
 use_turris_smtp() {
-        mail_from="$(uci get user_notify.smtp.sender_name | cut -d '@' -f1)@notify.turris.cz"
-        local username=`atsha204cmd serial-number`
-        local password=`echo "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef" \
-                        | atsha204cmd challenge-response \
-                        | awk '{print tolower($0)}'`
+	mail_from="$(uci get user_notify.smtp.sender_name | cut -d '@' -f1)@notify.turris.cz"
+	local username=`atsha204cmd serial-number`
+	local password=`echo "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef" \
+			| atsha204cmd challenge-response \
+			| awk '{print tolower($0)}'`
 
-        local server="smtp.turris.cz"
-        local port="465"
+	local server="smtp.turris.cz"
+	local port="465"
 
-        echo "from $from" >> "$msmtp_cfg_file"
-        echo "host $server" >> "$msmtp_cfg_file"
-        echo "port $port" >> "$msmtp_cfg_file"
+	echo "from $from" >> "$msmtp_cfg_file"
+	echo "host $server" >> "$msmtp_cfg_file"
+	echo "port $port" >> "$msmtp_cfg_file"
 	echo "tls on" >> "$msmtp_cfg_file"
 	echo "tls_certcheck off" >> "$msmtp_cfg_file"
 	echo "tls_starttls off" >> "$msmtp_cfg_file"	  
@@ -64,8 +64,8 @@ parse_user_server_setting() {
 	local port=`uci get user_notify.smtp.port`
 	local security=`uci get user_notify.smtp.security`
 
-        echo "from $from" >> "$msmtp_cfg_file"
- 	echo "host $server" >> "$msmtp_cfg_file"
+	echo "from $from" >> "$msmtp_cfg_file"
+	echo "host $server" >> "$msmtp_cfg_file"
 	echo "port $port" >> "$msmtp_cfg_file"
 
 	if [ "$security" = "ssl" ]; then
