@@ -1,6 +1,6 @@
 #!/bin/busybox ash
 
-# Copyright (c) 2013-2014, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (c) 2013-2015, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ TEMPFILE=/tmp/watchdog.tmp.$$
 
 trap 'rm "$TEMPFILE"' EXIT INT QUIT TERM
 
-# Grap current list of processes, strip off the header and keep only the first and last column.
+# Grab current list of processes, strip off the header and keep only the first and last column.
 # Seems like our ps doesn't know how to specify format, so we have to get through the
 # human-friendly crap
 busybox ps | tail -n+2 | sed -e 's/^ *\([0-9][0-9]*\)\(  *[^ ]*\)\{3\} */\1 /'>"$TEMPFILE"
@@ -60,13 +60,17 @@ for SERVICE in $SERVICES ; do
 		rm -f "$FILE"
 	else
 		if test -f "$FILE" ; then
+			# It is not there, but we are forbidden from restarting it
+			if uci get -q -d '
+' watchdog.@services[0].norestart | grep -q -x -F "$SERVICE" ; then
+				echo "Service $SERVICE not restarted as it is disabled in config" | logger -t watchdog -p daemon.info
 			# It is not there and was not there the previous time. Restart.
-			if /etc/init.d/"$SERVICE" restart ; then
+			elif /etc/init.d/"$SERVICE" restart ; then
 				echo "Restarted $SERVICE" | logger -t watchdog -p daemon.warn
+				rm -f "$FILE"
 			else
 				echo "Failed to restart $SERVICE" | logger -t watchdog -p daemon.err
 			fi
-			rm -f "$FILE"
 		else
 			# It was here previously, but it is not here now. Note it is
 			# missing (it may be temporary state, in the middle of upgrade,

@@ -10,3 +10,6 @@ service (in /etc/init.d) is restarted. It is not restarted the first time,
 since it might be shut down for upgrade, for example.
 
 The list of daemons is at the top of the script.
+
+The watchdog may be prevented from restarting some services by listing them in
+watchdog.@services[0].norestart list.
