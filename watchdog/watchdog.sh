@@ -28,8 +28,8 @@
 set -ex
 
 # Configuration
-COND_SERVICES="nethist lcollect"
-SERVICES="ucollect unbound"
+COND_SERVICES="nethist lcollect unbound"
+SERVICES="ucollect"
 for S in $COND_SERVICES ; do
 	if test -x "/etc/init.d/$S" && "/etc/init.d/$S" enabled ; then
 		SERVICES="$SERVICES $S"
