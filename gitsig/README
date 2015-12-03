@@ -11,6 +11,16 @@ directory to be $HOME/git-gpg. It may be possible (and better from security
 point of view) if some of the files weren't writable by the current user, to
 ensure malicious attacker can't add another key into the keyring.
 
+Also, to make tampering by the current user slightly harder, it may be
+desirable to make the scripts unwritable by the user as well. But it is
+questionable if this adds any level of security, or if the attacker could
+disable the check completely when already in the position to tamper with local
+files.
+
+It is important to check the gpg -k *every time* the git-gpg directory is
+updated (so an attacker couldn't sneak a key into the git repository and wait
+for it to be installed by accident).
+
 Unsigned detector
 -----------------
 
@@ -18,3 +28,10 @@ The `unsigned_detect.pl` tool is meant to be run periodically (for example
 after each push). It goes through the repository it is run in and reports any
 new commits from listed email addresses that are not signed by a trusted key.
 If any such commits are found, it signals this by terminating with exit code 1.
+
+Signed tip
+----------
+
+This script simply terminates successfully if the tip of the current branch is
+signed by a trusted key and fails if it is not. It is expected to be run before
+any code from any repository is used.
