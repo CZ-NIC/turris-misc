@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2013, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (c) 2013-2015, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,10 @@ while [ "$1" ] ; do
 		# It should be removed, if it exists
 		shift
 		rm -f "$WORKDIR"/"$1"
+	elif [ "$1" = '-x' ] ; then
+		# Reverse, extractor mode
+		shift
+		cp -a "$WORKDIR"/"$1" "$1"
 	elif cmp -s "$1" "$WORKDIR"/"$1" ; then
 		echo "$1" already stored, skipping
 	else
