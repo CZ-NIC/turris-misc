@@ -26,4 +26,4 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 export GNUPGHOME=$HOME/.git-gpg
-git log -n1 --pretty="%G?" | grep -qF 'G'
+git log -n1 --pretty="%G?" | grep -qF 'G' || ( echo "Tip not signed!" >&2; false )
