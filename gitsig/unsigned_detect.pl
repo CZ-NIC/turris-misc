@@ -30,12 +30,12 @@ use Storable qw(store retrieve);
 
 # Configure where the gpg directory with trusted keys to sign git commits lives.
 # Then run the git-log command that reads and checks the signatures on commits.
-$ENV{GNUPGHOME} = "$ENV{HOME}/git-gpg";
+$ENV{GNUPGHOME} = "$ENV{HOME}/.git-gpg";
 open my $cmd, '-|', 'git', 'log', '--pretty=%H %G? %ae %ce %s' or die "Couldn't run the git log command: $!\n";
 
 # Read cache of known commits, but don't fail if the file is not there
 my $known_commits = {};
-my $cache_file = "$ENV{HOME}/git-gpg/known_commits";
+my $cache_file = "$ENV{HOME}/.git-gpg/known_commits";
 eval { $known_commits = retrieve $cache_file };
 
 # Regular expression of addresses of people who must sign their commits.

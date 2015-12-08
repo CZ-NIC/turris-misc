@@ -7,7 +7,7 @@ Setup
 -----
 
 All these tools use separate gnupg home with the trusted keys. They expect the
-directory to be $HOME/git-gpg. It may be possible (and better from security
+directory to be $HOME/.git-gpg. It may be possible (and better from security
 point of view) if some of the files weren't writable by the current user, to
 ensure malicious attacker can't add another key into the keyring.
 
@@ -17,7 +17,7 @@ questionable if this adds any level of security, or if the attacker could
 disable the check completely when already in the position to tamper with local
 files.
 
-It is important to check the gpg -k *every time* the git-gpg directory is
+It is important to check the gpg -k *every time* the .git-gpg directory is
 updated (so an attacker couldn't sneak a key into the git repository and wait
 for it to be installed by accident).
 
@@ -35,3 +35,16 @@ Signed tip
 This script simply terminates successfully if the tip of the current branch is
 signed by a trusted key and fails if it is not. It is expected to be run before
 any code from any repository is used.
+
+gen-gpg
+-------
+
+This is a maintainance script. It imports the keys and trust settings from
+files in this directory (trusted_keys.gpg and trust.txt) and creates the
+$HOME/.git-gpg.
+
+gpg-refresh
+-----------
+
+Refresh keys from a keyserver. This will import any revocations or possible new
+signatures on the keys. It is recommended to put into a cron script.

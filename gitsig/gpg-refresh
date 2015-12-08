@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (c) 2015, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
@@ -25,5 +25,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+set -e
+
 export GNUPGHOME=$HOME/.git-gpg
-git log -n1 --pretty="%G?" | grep -qF 'G'
+gpg --keyserver hkp://pgp.mit.edu --refresh-keys
