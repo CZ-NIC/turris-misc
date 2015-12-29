@@ -26,6 +26,17 @@ Po spuštění se zobrazí informační text, který je nutné odsouhlasit. Nás
 
 V případě, že chcete sledovat podrobný výpis příkazů, které se během instalace spouštějí nebo pokud automatická instalace selhává, je vhodné spustit instalátor s flagem ``-d``. V tomto případě je potřeba potvrdit provedení každého kroku stiskem klávesy (např. ``Enter``).
 
+Odinstalace
+-----------
+
+Odinstalování je nutné provést ručně. To spočívá v odstranění firewallového pravidla, které zajišťuje přesměrování příchozího provozu na LAN z portu 53 na port 5353 (buď přes rozhraní LuCI, ruční editací souboru ``/etc/config/firewall``) nebo pomocí příkazu ``uci delete`` – pravidlo lze identifikovat podle položky ``name`` s hodnotou *knot-resolver redirect*), a odstraněním doinstalovaných balíčků (pokud nemají v systému závislosti).
+
+Několik balíků v systému závislosti nemá (jsou z repozitáře vývojové verze), ty můžete odstranit rovnou::
+
+    opkg remove knot-libdnssec knot-resolver libuv luajit
+
+Další však závislosti mít mohou (``knot-libknot``, ``libgnutls``, ``libnettle``, ``jansson``, ``libgmp`` a ``liburcu``), pokud tomu tak je, odstraňte je pomocí ``opkg --force-depends ...`` a poté je nainstalujte ze standardního repozitáře balíčků pomocí ``opkg install ...``.
+
 
 Další informace
 ---------------
