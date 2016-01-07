@@ -80,9 +80,9 @@ print "There are $other_commits from unknown people\n" if $other_commits;
 
 if (@bad_sigs) {
 	print "There are untrusted commits:\n";
-	print "• $_: $bad_stats{$_}\n" for sort keys %bad_stats;
+	print "* $_: $bad_stats{$_}\n" for sort keys %bad_stats;
 	print "\n";
 	print "List of specific commits:\n";
-	print "• $_->{hash}\t$_->{reason}\t$_->{committer}\t$_->{subject}\n" for @bad_sigs;
+	print "* $_->{hash}\t$_->{reason}\t$_->{committer}\t$_->{subject}\n" for @bad_sigs;
 	exit 1;
 }
