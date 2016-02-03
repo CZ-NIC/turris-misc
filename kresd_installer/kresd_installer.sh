@@ -104,13 +104,13 @@ silent_wget() {
 }
 
 cd "$INSTALLATION_DIR"
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/turrispackages/knot-libdnssec_2.0.1-213-gc1353ef-1_mpc85xx.ipk
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/turrispackages/knot-libknot_2.0.1-213-gc1353ef-1_mpc85xx.ipk
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/turrispackages/knot-resolver_1.0.0-beta2-91-g3bbdca3-1_mpc85xx.ipk
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/turrispackages/libgnutls_3.4.5-1_mpc85xx.ipk
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/base/libnettle_3.1.1-1_mpc85xx.ipk
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/turrispackages/libuv_1.6.1-1_mpc85xx.ipk
-silent_wget https://api.turris.cz/openwrt-repo/turris-next/packages/turrispackages/luajit_2.0.4-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/knot-libdnssec_2.0.1-213-gc1353ef-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/knot-libknot_2.0.1-213-gc1353ef-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/knot-resolver_1.0.0-beta2-91-g3bbdca3-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/libgnutls_3.4.5-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/libnettle_3.1.1-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/libuv_1.6.1-1_mpc85xx.ipk
+silent_wget https://api.turris.cz/knot/luajit_2.0.4-1_mpc85xx.ipk
 
 
 debug "Removing old packages."
