@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2013-2015, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (c) 2015, CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,31 +25,5 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set -ex
-
-PARTITION=/dev/mtdblock4
-WORKDIR=/tmp/certstore
-
-mkdir -p "$WORKDIR"
-test -z "$(ls -A "$WORKDIR")"
-mount -t jffs2 "$PARTITION" "$WORKDIR"
-while [ "$1" ] ; do
-	if [ "$1" = '-r' ] ; then
-		# It should be removed, if it exists
-		shift
-		rm -f "$WORKDIR"/"$1"
-	elif [ "$1" = '-x' ] ; then
-		# Reverse, extractor mode
-		shift
-		cp -a "$WORKDIR"/"$1" "$1"
-	elif cmp -s "$1" "$WORKDIR"/"$1" ; then
-		echo "$1" already stored, skipping
-	else
-		# It differs (or the backup doesn't exist) -> replace
-		mkdir -p "$WORKDIR"/"$(dirname "$1")"
-		cp -a "$1" "$WORKDIR"/"$1"
-	fi
-	shift
-done
-umount "$WORKDIR"
-rm -r "$WORKDIR"
+export GNUPGHOME=$HOME/.git-gpg
+git log -n1 --pretty="%G?" | grep -qF 'G' || ( echo "Tip not signed!" >&2; false )
