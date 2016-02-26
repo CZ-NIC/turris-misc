@@ -226,9 +226,16 @@ compose_message() {
 }
 
 lock() {
-	while ! mkdir "$1" >/dev/null 2>&1 ; do
-		sleep 1
+	# Try to acquire the lock. But only for a limited amount of time
+	# (15 minutes) to prevent too many waiting notifiers to gather in
+	# case something bad happens. It is started every 5 minutes anyway.
+	for i in `seq 1 900` ; do
+		if mkdir "$1" >/dev/null 2>&1 ; then
+			return
+		fi
 	done
+	echo "Failed to get the lock" >&2
+	exit 1
 }
 
 unlock() {
@@ -243,7 +250,7 @@ mark_msgs() {
 
 send_mail() {
 	lock "$locker_stamp"
-	trap 'unlock "$locker_stamp"' EXIT ABRT QUIT TERM
+	trap 'unlock "$locker_stamp"' EXIT ABRT QUIT TERM HUP INT QUIT ILL TRAP BUS FPE SEGV PIPE ALRM
 
 	create_msmtp_config
 	compose_message
