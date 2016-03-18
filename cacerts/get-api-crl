@@ -18,7 +18,8 @@ echo | openssl s_client -connect api.turris.cz:443 -showcerts 2>/dev/null | awk 
 if [ -e 0.pem ] ; then
 	for i in *.pem ; do
 		# This is a hack a bit, we expect the hostname to be crl\. something. Our CA satisfies this now and if it breaks, we would find out.
-		openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl -s -S | openssl crl -inform der -out tmp.pem
+		openssl x509 -in "$i" -noout -text | grep -o 'http://crl\..*' | xargs curl -s -S >crl.unknown
+		openssl crl -in crl.unknown -inform der -out tmp.pem || openssl crl -in crl.unknown -out tmp.pem
 		test -s tmp.pem
 		cat tmp.pem >>out.pem
 	done
