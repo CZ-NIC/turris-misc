@@ -6,7 +6,7 @@ set -xe
 
 DIR=$(mktemp -d)
 HIST_DIR="/var/www/crl-hist"
-SYMLINK="/var/www/crl-hist/crl"
+SYMLINK="/var/www/crl-hist/latest"
 
 trap 'rm -rf "$DIR"' EXIT ABRT QUIT TERM INT
 cd "$DIR"
