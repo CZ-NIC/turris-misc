@@ -1,0 +1,36 @@
+[ca]
+default_ca = turris_ca
+
+[crl_ext]
+authorityKeyIdentifier=keyid:always
+
+[turris_ca]
+dir = ./
+new_certs_dir = $dir
+unique_subject = no
+certificate = $dir/ca.crt
+database = $dir/certindex
+private_key = $dir/ca.key
+serial = $dir/certserial
+default_days = 365
+default_md = sha512
+policy = turris_policy
+x509_extensions = turris_extensions
+crlnumber = $dir/crlnumber
+default_crl_days = 7
+
+[turris_policy]
+commonName = supplied
+stateOrProvinceName = supplied
+countryName = optional
+emailAddress = optional
+organizationName = supplied
+organizationalUnitName = optional
+
+[turris_extensions]
+basicConstraints = CA:false
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always
+keyUsage = digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth
+crlDistributionPoints = URI:https://api.turris.cz/crl

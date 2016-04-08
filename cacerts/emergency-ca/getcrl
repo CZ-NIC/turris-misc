@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -ex
+cd $(dirname "$0")
+openssl ca -config config -gencrl -keyfile ca.key -cert ca.crt -out crl.pem

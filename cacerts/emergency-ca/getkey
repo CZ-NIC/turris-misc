@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -ex
+cd $(dirname "$0")
+openssl genrsa -out new.key 4096
+openssl req -new -key new.key -out new.csr
+openssl ca -batch -config config -notext -in new.csr -out new.crt

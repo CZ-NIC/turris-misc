@@ -1,0 +1,25 @@
+The emergency CA
+================
+
+In case anything else fails, the updater trusts this one additional authority.
+It is trusted by the updater only, so its use would be to install updates that
+make everything allright again.
+
+Note that the private key is not included in the git repository, only in the
+complete version stored offline in a safe deposit box.
+
+To use it, this must be performed:
+ * Run the getkey. A new key is created, together with a certificate. Use that
+   one on the web server.
+ * Run getcrl. A crl file is created. Place that so it is served on the right
+   spot (https://api.turris.cz/crl).
+ * Release updates that make sure everything works after getting back to the
+   real certificate authorities.
+ * Revoke the key.
+ * Pack the CA directory back to the safe deposit box (when generating
+   certificates, some files are modified and must be preserved before the next
+   use).
+
+Note that while the CA has 10 years validity, the CRT 1 year, the CRL is only
+valid for 7 days. So it needs to be re-generated often for the time we use the
+emergency CA.
