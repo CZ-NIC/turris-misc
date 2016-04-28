@@ -29,10 +29,23 @@ set -ex
 
 PARTITION=/dev/mtdblock4
 WORKDIR=/tmp/certstore
+SUBVOL=certbackup
 
-mkdir -p "$WORKDIR"
+mkdir -p "$(dirname "$WORKDIR")"
+mkdir "$WORKDIR"
+trap "umount -fl '$WORKDIR'; rmdir '$WORKDIR'" EXIT INT QUIT TERM ABRT
+
 test -z "$(ls -A "$WORKDIR")"
-mount -t jffs2 "$PARTITION" "$WORKDIR"
+if grep -q '/dev/mmcblk0p1 / btrfs' /proc/mounts; then
+	if ! btrfs subvol list / | grep -q "path $SUBVOL"; then
+		mount -t btrfs -o subvol=/ /dev/mmcblk0p1 "$WORKDIR"
+		btrfs subvolume create "$WORKDIR"/"$SUBVOL"
+		umount "$WORKDIR"
+	fi
+	mount -t btrfs -o subvol=/"$SUBVOL" /dev/mmcblk0p1 "$WORKDIR"
+else
+	mount -t jffs2 "$PARTITION" "$WORKDIR"
+fi
 while [ "$1" ] ; do
 	if [ "$1" = '-r' ] ; then
 		# It should be removed, if it exists
@@ -42,6 +55,9 @@ while [ "$1" ] ; do
 		# Reverse, extractor mode
 		shift
 		cp -a "$WORKDIR"/"$1" "$1"
+	elif [ "$1" = '-X' ] ; then
+		# Reverse, all extractor mode
+		[ -z "$(ls -1 "$WORKDIR")" ] || cp -ra "$WORKDIR"/* /
 	elif cmp -s "$1" "$WORKDIR"/"$1" ; then
 		echo "$1" already stored, skipping
 	else
@@ -51,5 +67,3 @@ while [ "$1" ] ; do
 	fi
 	shift
 done
-umount "$WORKDIR"
-rm -r "$WORKDIR"
