@@ -86,6 +86,11 @@ umount_root() {
     rmdir "$LOCK"
 }
 
+# Does pretty output, counts and adds enough spaces to fill desired space, arguments are:
+#  $1 - what to print
+#  $2 - minimal width -2
+#  $3 - alignment - default is left, you can use 'R' to align to right
+#  $4 - what to fill with - default is spaces
 round_output() {
     WORD="$1"
     ROUND="$2"
@@ -308,7 +313,7 @@ my_status() {
 }
 
 cleanup() {
-    echo "Checking what snapshots makes sense."
+    echo "Searching for snapshots without any change."
     echo "This can take a while, please be patient."
     echo
     LAST=""
