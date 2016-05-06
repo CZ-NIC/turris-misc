@@ -56,8 +56,13 @@ while [ "$1" ] ; do
 		shift
 		cp -a "$WORKDIR"/"$1" "$1"
 	elif [ "$1" = '-X' ] ; then
-		# Reverse, all extractor mode
-		[ -z "$(ls -1 "$WORKDIR")" ] || cp -ra "$WORKDIR"/* /
+		# Reverse, all extractor mode somewhere
+		DEST="/"
+		if [ -n "$2" ]; then
+			DEST="$2"
+			shift
+		fi
+		[ -z "$(ls -1 "$WORKDIR")" ] || cp -ra "$WORKDIR"/* "$DEST"
 	elif cmp -s "$1" "$WORKDIR"/"$1" ; then
 		echo "$1" already stored, skipping
 	else
