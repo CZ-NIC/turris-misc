@@ -286,6 +286,7 @@ rollback() {
     if btrfs subvolume snapshot "$TMP_MNT_DIR"/@$ROLL_TO "$TMP_MNT_DIR"/@ > /dev/null; then
         echo "Current state saved as snapshot number $NUMBER"
         echo "Rolled back to snapshot $ROLL_TO"
+        [ -z "`which cert-backup`" ] || cert-backup -X "$TMP_MNT_DIR"/@
     else
         rm -f "$TMP_MNT_DIR"/$NUMBER.info
         mv "$TMP_MNT_DIR"/@$NUMBER "$TMP_MNT_DIR"/@
