@@ -28,11 +28,10 @@ show_help() {
     echo "Usage: `basename $0` command [options]"
     echo ""
     echo "Commands:"
-    echo "  create [opts]           Creates snapshot of current system"
+    echo "  create [opts] [desc]    Creates snapshot of current system"
     echo "      Options:"
     echo "          -t type         Type of the snapshot - default 'single'"
     echo "                          Other options are 'time', 'rollback', 'pre' and 'post'"
-    echo "          -d description  Some note about the snapshot"
     echo
     echo "  list                    Show available snapshots"
     echo
@@ -56,6 +55,9 @@ show_help() {
     echo "                          Numbers can be found via list command"
     echo
     echo "  cmp [number] [number]   Compare snapshots corresponding to the numbers"
+    echo "                          Numbers can be found via list command"
+    echo
+    echo "  diff [number] [number]  Compare snapshots corresponding to the numbers"
     echo "                          Numbers can be found via list command"
 }
 
@@ -82,8 +84,8 @@ mount_snp() {
 }
 
 umount_root() {
-    umount -fl "$TMP_MNT_DIR"
-    rmdir "$LOCK"
+    umount -fl "$TMP_MNT_DIR" 2> /dev/null
+    rmdir "$LOCK" 2> /dev/null
 }
 
 # Does pretty output, counts and adds enough spaces to fill desired space, arguments are:
@@ -160,8 +162,8 @@ get_next_number() {
 }
 
 create() {
+    DESCRIPTION=""
     TYPE="single"
-    DESCRIPTION="User created snapshot"
     while [ -n "$1" ]; do
         if   [ "x$1" = "x-t" ]; then
             shift
@@ -173,22 +175,18 @@ create() {
             fi
             TYPE="$1"
             shift
-        elif [ "x$1" = "x-d" ]; then
-            shift
-            DESCRIPTION="$1"
-            shift
         else
-            echo "Unknown create option '$1'"
-            echo
-            show_help
-            ERR=1
-            return
+            [ -z "$DESCRIPTION" ] || DESCRIPTION="$DESCRIPTION "
+            DESCRIPTION="${DESCRIPTION}${1}"
+            shift
         fi
     done
+    [ -n "$DESCRIPTION" ] || DESCRIPTION="User created snapshot"
     NUMBER="`get_next_number`"
     if btrfs subvolume snapshot "$TMP_MNT_DIR"/@ "$TMP_MNT_DIR"/@$NUMBER > /dev/null; then
         echo "TYPE=\"$TYPE\"" > "$TMP_MNT_DIR"/$NUMBER.info
         echo "DESCRIPTION=\"$DESCRIPTION\"" >> "$TMP_MNT_DIR"/$NUMBER.info
+        echo "CREATED=\"`date "+%Y-%m-%d %H:%M:%S"`\"" >> "$TMP_MNT_DIR"/$NUMBER.info
         echo "Snapshot number $NUMBER created"
     else
         echo "Error creating new snapshot"
@@ -339,6 +337,21 @@ cleanup() {
     fi
 }
 
+snp_diff() {
+    if [ \! -d "$TMP_MNT_DIR"/@$1 ]; then
+        echo "Snapshot number $1 does not exists!"
+        ERR=3
+        return
+    fi
+    if [ \! -d "$TMP_MNT_DIR"/@$2 ]; then
+        echo "Snapshot number $2 does not exists!"
+        ERR=3
+        return
+    fi
+    ( cd "$TMP_MNT_DIR";
+      diff -Nru @"$1" @"$2" 2> /dev/null )
+}
+
 snp_status() {
     if [ \! -d "$TMP_MNT_DIR"/@$1 ]; then
         echo "Snapshot number $1 does not exists!"
@@ -363,15 +376,15 @@ snp_status() {
     my_status "$1" "$2"
 }
 
-trap 'umount_root; exit "$ERR"' EXIT INT QUIT TERM ABRT
 mount_root
+trap 'umount_root; exit "$ERR"' EXIT INT QUIT TERM ABRT
 command="$1"
 shift
 case $command in
     create)
         create "$@"
         ;;
-    create)
+    modify)
         modify "$@"
         ;;
     list)
@@ -382,7 +395,7 @@ case $command in
         ;;
     delete)
         for i in "$@"; do
-            delete "$1"
+            delete "$i"
         done
         ;;
     rollback)
@@ -390,7 +403,7 @@ case $command in
         ;;
     mount)
         for i in "$@"; do
-            mount_snp "$1"
+            mount_snp "$i"
         done
         ;;
     cmp)
@@ -404,6 +417,24 @@ case $command in
             [ $# -gt 0 ]   || LAST="`btrfs subvolume list "$TMP_MNT_DIR" | sed -n 's|ID [0-9]* gen [0-9]* top level [0-9]* path @\([0-9][0-9]*\)$|\1|p' | sort -n | tail -n 1`"
             [ -n "$LAST" ] || LAST="factory"
             snp_status "$LAST" "$2"
+        fi
+        ;;
+    diff)
+        if ! which diff > /dev/null; then
+            echo "Utility diff not found!"
+            echo "Please install diffutils package"
+            exit 4
+        fi
+        if [ $# -gt 2 ]; then
+            echo "Wrong number of arguments"
+            echo
+            ERR=3
+            show_help
+        else
+            LAST="$1"
+            [ $# -gt 0 ]   || LAST="`btrfs subvolume list "$TMP_MNT_DIR" | sed -n 's|ID [0-9]* gen [0-9]* top level [0-9]* path @\([0-9][0-9]*\)$|\1|p' | sort -n | tail -n 1`"
+            [ -n "$LAST" ] || LAST="factory"
+            snp_diff "$LAST" "$2"
         fi
         ;;
     help)
