@@ -20,6 +20,7 @@ TMP_MNT_DIR="/mnt/.snapshots"
 LOCK="/tmp/schnapps.lock"
 ERR=0
 KEEP_MAX=""
+ROOT_DEV="/dev/mmcblk0p1"
 [ -z "`which uci`" ]    || KEEP_MAX="`uci get schnapps.keep.max 2> /dev/null`"
 [ \! -f /etc/schnapps ] || . /etc/schnapps
 [ -n "$KEEP_MAX" ]      || KEEP_MAX=0
@@ -71,7 +72,7 @@ mount_root() {
         echo "ERROR: Something is already in '$TMP_MNT_DIR'"
         exit 2
     fi
-    mount /dev/mmcblk0p1 -o subvol=/ "$TMP_MNT_DIR"
+    mount "$ROOT_DEV" -o subvol=/ "$TMP_MNT_DIR"
 }
 
 mount_snp() {
@@ -80,7 +81,7 @@ mount_snp() {
         echo "ERROR: Something is already in '/mnt/snapshot-@$1'"
         exit 2
     fi
-    mount /dev/mmcblk0p1 -o subvol=/@$1 /mnt/snapshot-@$1
+    mount "$ROOT_DEV" -o subvol=/@$1 /mnt/snapshot-@$1
 }
 
 umount_root() {
