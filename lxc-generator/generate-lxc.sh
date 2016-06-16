@@ -44,7 +44,7 @@ add_image "Ubuntu_Cloud" "16.04" "armv7l" "https://uec-images.ubuntu.com/release
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
-    find . -type f -exec gpg --passphrase-file ~/gpg-pass -a --detach-sign \{\} \;
+    find . -type f -exec echo cat ~/gpg-pass \| gpg  --batch --no-tty --yes --passphrase-fd 0 -a --detach-sign \{\} \; | sh
 else
     find . -type f -exec gpg -a --detach-sign \{\} \;
 fi
