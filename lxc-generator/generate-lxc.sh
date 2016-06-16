@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 mkdir -p meta/1.0
 rm -f meta/1.0/index-system*
 mkdir -p images
