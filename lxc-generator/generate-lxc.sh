@@ -36,9 +36,15 @@ get_gentoo_url() {
     echo "http://distfiles.gentoo.org/releases/$1/autobuilds/$REL"
 }
 
-add_image "Archlinux" "latest" "armv7l" "https://archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz"
+get_omnia_url() {
+    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/ | sed -n 's|.*>\(omnia-medkit[^<]*\)<.*|\1|p'`"
+    echo "https://api.turris.cz/openwrt-repo/omnia/$REL"
+}
+
+add_image "Turris_OS" "stable" "armv7l" "`get_omnia_url`"
+add_image "Turris_OS" "stable" "ppc" "https://api.turris.cz/openwrt-repo/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz"
+add_image "Arch_Linux_ARM" "latest" "armv7l" "https://archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
-add_image "Gentoo" "stable" "ppc" "`get_gentoo_url ppc ppc`"
 add_image "openSUSE" "13.2" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/13.2/appliances/openSUSE-13.2-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
 add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
 add_image "Ubuntu_Cloud" "16.04" "armv7l" "https://uec-images.ubuntu.com/releases/16.04/release/ubuntu-16.04-server-cloudimg-armhf-root.tar.gz"
