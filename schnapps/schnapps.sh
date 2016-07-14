@@ -36,7 +36,10 @@ show_help() {
     echo
     echo "  list                    Show available snapshots"
     echo
-    echo "  cleanup                 Find meaningless and too old snapshots and delete them"
+    echo "  cleanup                 Deletes snapshots that don't differ against the previous one"
+    echo "                          Also deletes old snapshots and keeps only N newest"
+    echo "                          You can set number of snapshots to keep in /etc/config/schnapps"
+    echo "                          Current value of N is $KEEP_MAX where 0 means don't delete old snapshots"
     echo
     echo "  delete <number> [...]   Deletes snapshot corresponding to the number(s)"
     echo "                          Numbers can be found via list command"
@@ -53,13 +56,16 @@ show_help() {
     echo "                          Numbers can be found via list command"
     echo
     echo "  mount <number> [...]    Mount snapshot corresponding to the number(s)"
+    echo "                          You can then browse it and you have to umount it manually"
     echo "                          Numbers can be found via list command"
     echo
     echo "  cmp [number] [number]   Compare snapshots corresponding to the numbers"
     echo "                          Numbers can be found via list command"
+    echo "                          Shows just which files differs"
     echo
     echo "  diff [number] [number]  Compare snapshots corresponding to the numbers"
     echo "                          Numbers can be found via list command"
+    echo "                          Shows even diffs of individual files"
 }
 
 mount_root() {
@@ -81,7 +87,13 @@ mount_snp() {
         echo "ERROR: Something is already in '/mnt/snapshot-@$1'"
         exit 2
     fi
-    mount "$ROOT_DEV" -o subvol=/@$1 /mnt/snapshot-@$1
+    if mount "$ROOT_DEV" -o subvol=/@$1 /mnt/snapshot-@$1; then
+        echo "Snapshot $1 mounted in /mnt/snapshot-@$1"
+    else
+        echo "ERROR: Can't mount snapshot $1"
+        rmdir /mnt/snapshot-@$1
+        ERR=5
+    fi
 }
 
 umount_root() {
