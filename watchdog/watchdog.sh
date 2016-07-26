@@ -28,7 +28,7 @@
 set -ex
 
 # Configuration
-COND_SERVICES="nethist lcollect unbound"
+COND_SERVICES="nethist lcollect resolver"
 SERVICES="ucollect"
 for S in $COND_SERVICES ; do
 	if test -x "/etc/init.d/$S" && "/etc/init.d/$S" enabled ; then
@@ -48,8 +48,8 @@ for SERVICE in $SERVICES ; do
 	# Get the claimed PID of the service
 	PID=`cat /var/run/"$SERVICE".pid || echo 'No such PID available'`
 	FILE=/tmp/watchdog-"$SERVICE"-missing
-	EXTRA=true # In case unbound is running but not working, try to reset it
-	if [ "$SERVICE" = "unbound" ] ; then
+	EXTRA=true # In case unbound/kresd is running but not working, try to reset it
+	if [ "$SERVICE" = "resolver" ] ; then
 		if ! ping -c 2 turris.cz ; then
 			EXTRA=false
 		fi
