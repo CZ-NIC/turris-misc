@@ -28,8 +28,8 @@
 set -ex
 
 # Configuration
-COND_SERVICES="nethist lcollect resolver"
-SERVICES="ucollect"
+COND_SERVICES="nethist lcollect resolver ucollect"
+SERVICES=""
 for S in $COND_SERVICES ; do
 	if test -x "/etc/init.d/$S" && "/etc/init.d/$S" enabled ; then
 		SERVICES="$SERVICES $S"
