@@ -255,6 +255,7 @@ modify() {
     done
     echo "TYPE=\"$TYPE\"" > "$TMP_MNT_DIR"/$NUMBER.info
     echo "DESCRIPTION=\"$DESCRIPTION\"" >> "$TMP_MNT_DIR"/$NUMBER.info
+    echo "CREATED=\"$CREATED\"" >> "$TMP_MNT_DIR"/$NUMBER.info
     echo "Snapshot number $NUMBER modified"
 }
 
@@ -306,6 +307,7 @@ rollback() {
     echo "TYPE=\"rollback\"" > "$TMP_MNT_DIR"/$NUMBER.info
     echo "DESCRIPTION=\"Rollback to snapshot $ROLL_TO\"" >> "$TMP_MNT_DIR"/$NUMBER.info
     echo "ROLL_TO=$ROLL_TO" >> "$TMP_MNT_DIR"/$NUMBER.info
+    echo "CREATED=\"`date "+%Y-%m-%d %H:%M:%S"`\"" >> "$TMP_MNT_DIR"/$NUMBER.info
     if btrfs subvolume snapshot "$TMP_MNT_DIR"/@$ROLL_TO "$TMP_MNT_DIR"/@ > /dev/null; then
         echo "Current state saved as snapshot number $NUMBER"
         echo "Rolled back to snapshot $ROLL_TO"
