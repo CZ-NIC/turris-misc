@@ -21,9 +21,17 @@ LOCK="/tmp/schnapps.lock"
 ERR=0
 KEEP_MAX=""
 ROOT_DEV="/dev/mmcblk0p1"
-[ -z "`which uci`" ]    || KEEP_MAX="`uci get schnapps.keep.max 2> /dev/null`"
-[ \! -f /etc/schnapps ] || . /etc/schnapps
-[ -n "$KEEP_MAX" ]      || KEEP_MAX=0
+if [ -n "`which uci`" ]; then
+    KEEP_MAX_SINGLE="`  uci get schnapps.keep.max_single   2> /dev/null`"
+    KEEP_MAX_TIME="`    uci get schnapps.keep.max_time     2> /dev/null`"
+    KEEP_MAX_UPDATER="` uci get schnapps.keep.max_updater  2> /dev/null`"
+    KEEP_MAX_ROLLBACK="`uci get schnapps.keep.max_rollback 2> /dev/null`"
+fi
+[ \! -f /etc/schnapps ]     || . /etc/schnapps
+[ -n "$KEEP_MAX_SINGLE"   ] || KEEP_MAX_SINGLE=-1
+[ -n "$KEEP_MAX_TIME"     ] || KEEP_MAX_TIME=-1
+[ -n "$KEEP_MAX_UPDATER"  ] || KEEP_MAX_UPDATER=-1
+[ -n "$KEEP_MAX_ROLLBACK" ] || KEEP_MAX_ROLLBACK=-1
 
 show_help() {
     echo "Usage: `basename $0` command [options]"
@@ -39,7 +47,11 @@ show_help() {
     echo "  cleanup                 Deletes snapshots that don't differ against the previous one"
     echo "                          Also deletes old snapshots and keeps only N newest"
     echo "                          You can set number of snapshots to keep in /etc/config/schnapps"
-    echo "                          Current value of N is $KEEP_MAX where 0 means don't delete old snapshots"
+    echo "                          Current value of N is following for various types (-1 means infinite):"
+    echo "                           * $KEEP_MAX_SINGLE single snapshots"
+    echo "                           * $KEEP_MAX_TIME time based snapshots"
+    echo "                           * $KEEP_MAX_UPDATER updater snapshots"
+    echo "                           * $KEEP_MAX_ROLLBACK rollback backups snapshots"
     echo
     echo "  delete <number> [...]   Deletes snapshot corresponding to the number(s)"
     echo "                          Numbers can be found via list command"
@@ -340,12 +352,50 @@ cleanup() {
         fi
         LAST="$i"
     done
-    if [ "$KEEP_MAX" ] && [ "$KEEP_MAX" -gt 0 ]; then
-        echo
-        KEEP_MAX="`expr $KEEP_MAX + 1`"
+    if [ "$KEEP_MAX_SINGLE" -ge 0 ] || [ "$KEEP_MAX_TIME" -ge 0 ] || [ "$KEEP_MAX_UPDATER" -ge 0 ]; then
         echo "Looking for old snapshots..."
-        for i in `btrfs subvolume list "$TMP_MNT_DIR" | sed -n 's|ID [0-9]* gen [0-9]* top level [0-9]* path @\([0-9][0-9]*\)$|\1|p' | sort -n -r | tail -n "+$KEEP_MAX"`; do
-            delete "$i" | sed 's|^| - |'
+        KEEP_MAX_PRE="$KEEP_MAX_UPDATER"
+        KEEP_MAX_POST="$KEEP_MAX_UPDATER"
+        for i in `btrfs subvolume list "$TMP_MNT_DIR" | sed -n 's|ID [0-9]* gen [0-9]* top level [0-9]* path @\([0-9][0-9]*\)$|\1|p' | sort -n -r`; do
+            TYPE="single"
+            [ \! -f "$TMP_MNT_DIR"/$i.info ] || . "$TMP_MNT_DIR"/$i.info
+            case $TYPE in
+                single)
+                    if [ "$KEEP_MAX_SINGLE" -eq 0 ]; then
+                        delete "$i" | sed 's|^| - |'
+                    else
+                        KEEP_MAX_SINGLE="`expr $KEEP_MAX_SINGLE - 1`"
+                    fi
+                    ;;
+                pre)
+                    if [ "$KEEP_MAX_PRE" -eq 0 ]; then
+                        delete "$i" | sed 's|^| - |'
+                    else
+                        KEEP_MAX_PRE="`expr $KEEP_MAX_PRE - 1`"
+                    fi
+                    ;;
+                post)
+                    if [ "$KEEP_MAX_POST" -eq 0 ]; then
+                        delete "$i" | sed 's|^| - |'
+                    else
+                        KEEP_MAX_POST="`expr $KEEP_MAX_POST - 1`"
+                    fi
+                    ;;
+                time)
+                    if [ "$KEEP_MAX_TIME" -eq 0 ]; then
+                        delete "$i" | sed 's|^| - |'
+                    else
+                        KEEP_MAX_TIME="`expr $KEEP_MAX_TIME - 1`"
+                    fi
+                    ;;
+                rollback)
+                    if [ "$KEEP_MAX_ROLLBACK" -eq 0 ]; then
+                        delete "$i" | sed 's|^| - |'
+                    else
+                        KEEP_MAX_ROLLBACK="`expr $KEEP_MAX_ROLLBACK - 1`"
+                    fi
+                    ;;
+            esac
         done
     fi
 }
