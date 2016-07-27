@@ -32,7 +32,7 @@ show_help() {
     echo "  create [opts] [desc]    Creates snapshot of current system"
     echo "      Options:"
     echo "          -t type         Type of the snapshot - default 'single'"
-    echo "                          Other options are 'time', 'rollback', 'pre' and 'post'"
+    echo "                          Other options are 'time', 'pre' and 'post'"
     echo
     echo "  list                    Show available snapshots"
     echo
