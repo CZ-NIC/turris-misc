@@ -1,2 +1,5 @@
 config keep 'keep'
-        option max '15'
+        option max_single '-1'
+        option max_time '5'
+        option max_updater '5'
+        option max_rollback '3'

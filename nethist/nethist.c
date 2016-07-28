@@ -8,7 +8,7 @@
 
 #define BUFFSIZE 512
 #define SNAPSHOT_COUNT 80
-#define SLEEP_TIME_USEC 3000000
+#define SLEEP_TIME_USEC 15000000
 #define SNIFF_FILE_NET "/proc/net/dev"
 #define SNIFF_FILE_CPU "/proc/loadavg"
 #define SNIFF_FILE_MEM "/proc/meminfo"
