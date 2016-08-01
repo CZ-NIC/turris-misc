@@ -87,6 +87,7 @@ mount_root() {
     fi
     mkdir -p "$TMP_MNT_DIR"
     if [ -n "`ls -A "$TMP_MNT_DIR"`" ]; then
+        rmdir "$LOCK"
         echo "ERROR: Something is already in '$TMP_MNT_DIR'"
         exit 2
     fi
@@ -147,7 +148,7 @@ table_put() {
     echo -n "|"
     round_output "$2" 10
     echo -n "|"
-    round_output "$3" 20
+    round_output "$3" 26
     echo -n "| "
     echo "$4"
 }
@@ -157,9 +158,9 @@ table_separator() {
     echo -n "+"
     round_output "-" 10 "" "-"
     echo -n "+"
-    round_output "-" 20 "" "-"
+    round_output "-" 26 "" "-"
     echo -n "+"
-    round_output "-" 38 "" "-"
+    round_output "-" 32 "" "-"
     echo ""
 }
 
@@ -211,7 +212,7 @@ create() {
     if btrfs subvolume snapshot "$TMP_MNT_DIR"/@ "$TMP_MNT_DIR"/@$NUMBER > /dev/null; then
         echo "TYPE=\"$TYPE\"" > "$TMP_MNT_DIR"/$NUMBER.info
         echo "DESCRIPTION=\"$DESCRIPTION\"" >> "$TMP_MNT_DIR"/$NUMBER.info
-        echo "CREATED=\"`date "+%Y-%m-%d %H:%M:%S"`\"" >> "$TMP_MNT_DIR"/$NUMBER.info
+        echo "CREATED=\"`date "+%Y-%m-%d %H:%M:%S %z"`\"" >> "$TMP_MNT_DIR"/$NUMBER.info
         echo "Snapshot number $NUMBER created"
     else
         echo "Error creating new snapshot"
@@ -307,7 +308,7 @@ rollback() {
     echo "TYPE=\"rollback\"" > "$TMP_MNT_DIR"/$NUMBER.info
     echo "DESCRIPTION=\"Rollback to snapshot $ROLL_TO\"" >> "$TMP_MNT_DIR"/$NUMBER.info
     echo "ROLL_TO=$ROLL_TO" >> "$TMP_MNT_DIR"/$NUMBER.info
-    echo "CREATED=\"`date "+%Y-%m-%d %H:%M:%S"`\"" >> "$TMP_MNT_DIR"/$NUMBER.info
+    echo "CREATED=\"`date "+%Y-%m-%d %H:%M:%S %z"`\"" >> "$TMP_MNT_DIR"/$NUMBER.info
     if btrfs subvolume snapshot "$TMP_MNT_DIR"/@$ROLL_TO "$TMP_MNT_DIR"/@ > /dev/null; then
         echo "Current state saved as snapshot number $NUMBER"
         echo "Rolled back to snapshot $ROLL_TO"
