@@ -41,12 +41,24 @@ get_omnia_url() {
     echo "https://api.turris.cz/openwrt-repo/omnia/$REL"
 }
 
+get_linaro_latest() {
+    case "$1" in
+        debian)
+            echo https://releases.linaro.org/debian/images/developer-armhf/latest/
+            ;;
+        ubuntu)
+            echo https://releases.linaro.org/ubuntu/images/developer/latest/
+            ;;
+    esac
+}
+
 get_linaro_release() {
-    wget -O - https://releases.linaro.org/$1/images/developer/latest/ | sed -n 's|.*href="/'"$1"'/images/developer/latest/linaro-\([a-z]*\)-developer-[0-9]*-[0-9]*.tar.gz.*|\1|p'
+    wget -O - `get_linaro_latest $1` | sed -n 's|.*href="/'"$1"'/images/.*/linaro-\([a-z]*\)-developer-[0-9]*-[0-9]*.tar.gz.*|\1|p'
 }
 
 get_linaro_url() {
-    echo "https://releases.linaro.org`wget -O - https://releases.linaro.org/$1/images/developer/latest/ | sed -n 's|.*href="\(/'"$1"'/images/developer/latest/linaro-[a-z]*-developer-[0-9]*-[0-9]*.tar.gz\).*|\1|p'`"
+    LIN_LATEST="`get_linaro_latest $1`"
+    echo "https://releases.linaro.org`wget -O - $LIN_LATEST | sed -n 's|.*href="\(/'"$1"'/images/.*/latest/linaro-[a-z]*-developer-[0-9]*-[0-9]*.tar.gz\).*|\1|p'`"
 }
 
 add_image "Turris_OS" "stable" "armv7l" "`get_omnia_url`"
