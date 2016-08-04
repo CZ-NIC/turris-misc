@@ -20,7 +20,7 @@ add_image() {
         FILE="`echo "$FILE" | sed -e 's|\.tgz$|.tar|' -e 's|\.tar\.gz$|.tar|'`"
     fi
     mv "$FILE" rootfs.tar
-    xz -9 rootfs.tar
+    xz rootfs.tar
     echo "Distribution $1 version $2 was just installed into your container." > create-message
     echo "" >> create-message
     echo "Content of the tarballs is provided by third party, thus there is no warranty of any kind." >> create-message
