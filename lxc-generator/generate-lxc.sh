@@ -19,8 +19,10 @@ add_image() {
         gzip -d "$FILE"
         FILE="`echo "$FILE" | sed -e 's|\.tgz$|.tar|' -e 's|\.tar\.gz$|.tar|'`"
     fi
-    mv "$FILE" rootfs.tar
-    xz rootfs.tar
+    if [ "$FILE" \!= rootfs.tar.xz ]; then
+        mv "$FILE" rootfs.tar
+        xz rootfs.tar
+    fi
     echo "Distribution $1 version $2 was just installed into your container." > create-message
     echo "" >> create-message
     echo "Content of the tarballs is provided by third party, thus there is no warranty of any kind." >> create-message
@@ -61,15 +63,18 @@ get_linaro_url() {
     echo "https://releases.linaro.org`wget -O - $LIN_LATEST | sed -n 's|.*href="\(/'"$1"'/images/.*/latest/linaro-[a-z]*-developer-[0-9]*-[0-9]*.tar.gz\).*|\1|p'`"
 }
 
+get_lxc_url() {
+    echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/armhf/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
+}
+
 add_image "Turris_OS" "stable" "armv7l" "`get_omnia_url`"
 add_image "Turris_OS" "stable" "ppc" "https://api.turris.cz/openwrt-repo/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz"
-# Wrong structure, would need to be repacked
-# add_image "Debian_by_Linaro" "`get_linaro_release debian`" "armv7l" "`get_linaro_url debian`"
+add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
+add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
 add_image "openSUSE" "13.2" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/13.2/appliances/openSUSE-13.2-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
 add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
-# Wrong structure, would need to be repacked
-# add_image "Ubuntu_by_Linaro" "`get_linaro_release ubuntu`" "armv7l" "`get_linaro_url ubuntu`"
+add_image "Ubuntu" "Yakkety" "armv7l" "`get_lxc_url ubuntu/yakkety/armhf`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
