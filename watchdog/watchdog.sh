@@ -28,8 +28,8 @@
 set -ex
 
 # Configuration
-COND_SERVICES="nethist lcollect resolver ucollect"
-SERVICES=""
+COND_SERVICES="nethist lcollect ucollect"
+SERVICES="resolver"
 for S in $COND_SERVICES ; do
 	if test -x "/etc/init.d/$S" && "/etc/init.d/$S" enabled ; then
 		SERVICES="$SERVICES $S"
@@ -49,20 +49,23 @@ for SERVICE in $SERVICES ; do
 	PID=`cat /var/run/"$SERVICE".pid || echo 'No such PID available'`
 	FILE=/tmp/watchdog-"$SERVICE"-missing
 	EXTRA=true # In case unbound/kresd is running but not working, try to reset it
+	NAME="/$SERVICE/p"
 	if [ "$SERVICE" = "resolver" ] ; then
 		if ! ping -c 2 turris.cz ; then
 			EXTRA=false
 		fi
+		NAME='/unbound/p;/kresd/p'
 	fi
 	# Look if there's a process with such name and PID in as reliable way as shell allows
-	if grep "^$PID " "$TEMPFILE" | sed -e 's/^[^ ]*//' | grep "$SERVICE">/dev/null && $EXTRA ; then
+	# The magic with sed is there because musl-based grep doesn't know alternatives \(x\|y\).
+	if grep "^$PID " "$TEMPFILE" | sed -e 's/^[^ ]*//' | sed -ne "$NAME" | grep -q '.' && $EXTRA ; then
 		# It runs. Remove any possible missing note from previous run.
 		rm -f "$FILE"
 	else
 		if test -f "$FILE" ; then
 			# It is not there, but we are forbidden from restarting it
-			if uci get -q -d '
-' watchdog.@services[0].norestart | grep -q -x -F "$SERVICE" ; then
+			if uci -q -d '
+' get watchdog.@services[0].norestart | grep -q -x -F "$SERVICE" ; then
 				echo "Service $SERVICE not restarted as it is disabled in config" | logger -t watchdog -p daemon.info
 			# It is not there and was not there the previous time. Restart.
 			elif /etc/init.d/"$SERVICE" restart ; then
