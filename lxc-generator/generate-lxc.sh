@@ -4,13 +4,18 @@ rm -f meta/1.0/index-system*
 mkdir -p images
 rm -rf images/*
 
+die() {
+    echo "$1"
+    exit 1
+}
+
 DATE="`date +%Y-%m-%d`"
 
 add_image() {
     echo "$1;$2;$3;default;$DATE;/images/$1/$2/$3/$DATE" >> meta/1.0/index-system.2
     mkdir -p "images/$1/$2/$3/$DATE"
     pushd "images/$1/$2/$3/$DATE"
-    wget "$4"
+    wget "$4" || die "Downloading $1 $2 for $3 from $4 failed"
     FILE="`ls -1`"
     if expr "$FILE" : .*\\.tbz || expr "$FILE" : .*\\.tar.bz2; then
         bzip2 -d "$FILE"
@@ -39,7 +44,7 @@ get_gentoo_url() {
 }
 
 get_omnia_url() {
-    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/ | sed -n 's|.*>\(omnia-medkit[^<]*\)<.*|\1|p'`"
+    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/ | sed -n 's|.*>\(omnia-medkit[^<]*gz\)<.*|\1|p'`"
     echo "https://api.turris.cz/openwrt-repo/omnia/$REL"
 }
 
@@ -64,7 +69,7 @@ get_linaro_url() {
 }
 
 get_lxc_url() {
-    echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/armhf/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
+    echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
 }
 
 add_image "Turris_OS" "stable" "armv7l" "`get_omnia_url`"
