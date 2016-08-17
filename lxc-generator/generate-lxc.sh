@@ -44,7 +44,7 @@ get_gentoo_url() {
 }
 
 get_omnia_url() {
-    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/ | sed -n 's|.*>\(omnia-medkit[^<]*gz\)<.*|\1|p'`"
+    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/ | sed -n 's|.*>\(omnia-medkit-2[^<]*gz\)<.*|\1|p'`"
     echo "https://api.turris.cz/openwrt-repo/omnia/$REL"
 }
 
