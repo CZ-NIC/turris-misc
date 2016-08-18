@@ -33,18 +33,19 @@ SUBVOL=certbackup
 
 mkdir -p "$(dirname "$WORKDIR")"
 mkdir "$WORKDIR"
-trap "umount -fl '$WORKDIR'; rmdir '$WORKDIR'" EXIT INT QUIT TERM ABRT
+trap "umount -fl '$WORKDIR' || true; rmdir '$WORKDIR'" EXIT INT QUIT TERM ABRT
 
 test -z "$(ls -A "$WORKDIR")"
-if grep -q '/dev/mmcblk0p1 / btrfs' /proc/mounts; then
-	if ! btrfs subvol list / | grep -q "path $SUBVOL"; then
+if test -b "$PARTITION"; then
+	mount -t jffs2 "$PARTITION" "$WORKDIR"
+else
+	if grep -q '/dev/mmcblk0p1 / btrfs' /proc/mounts && \
+	   ! btrfs subvol list / | grep -q "path $SUBVOL"; then
 		mount -t btrfs -o subvol=/ /dev/mmcblk0p1 "$WORKDIR"
 		btrfs subvolume create "$WORKDIR"/"$SUBVOL"
 		umount "$WORKDIR"
 	fi
 	mount -t btrfs -o subvol=/"$SUBVOL" /dev/mmcblk0p1 "$WORKDIR"
-else
-	mount -t jffs2 "$PARTITION" "$WORKDIR"
 fi
 while [ "$1" ] ; do
 	if [ "$1" = '-r' ] ; then
