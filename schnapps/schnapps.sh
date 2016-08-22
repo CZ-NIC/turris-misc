@@ -44,14 +44,15 @@ show_help() {
     echo
     echo "  list                    Show available snapshots"
     echo
-    echo "  cleanup                 Deletes snapshots that don't differ against the previous one"
-    echo "                          Also deletes old snapshots and keeps only N newest"
+    echo "  cleanup [--compare]     Deletes old snapshots and keeps only N newest"
     echo "                          You can set number of snapshots to keep in /etc/config/schnapps"
     echo "                          Current value of N is following for various types (-1 means infinite):"
     echo "                           * $KEEP_MAX_SINGLE single snapshots"
     echo "                           * $KEEP_MAX_TIME time based snapshots"
     echo "                           * $KEEP_MAX_UPDATER updater snapshots"
     echo "                           * $KEEP_MAX_ROLLBACK rollback backups snapshots"
+    echo "                          With --compare option also deletes snapshots that doesn't differ from"
+    echo "                          the previous one"
     echo
     echo "  delete <number> [...]   Deletes snapshot corresponding to the number(s)"
     echo "                          Numbers can be found via list command"
@@ -340,21 +341,23 @@ my_status() {
 }
 
 cleanup() {
-    echo "Searching for snapshots without any change."
-    echo "This can take a while, please be patient."
-    echo
-    LAST=""
-    for i in `btrfs subvolume list "$TMP_MNT_DIR" | sed -n 's|ID [0-9]* gen [0-9]* top level [0-9]* path @\([0-9][0-9]*\)$|\1|p' | sort -n`; do
-        if [ -z "$LAST" ]; then
+    if [ "x$1" = "x--compare" ]; then
+        echo "Searching for snapshots without any change."
+        echo "This can take a while, please be patient."
+        echo
+        LAST=""
+        for i in `btrfs subvolume list "$TMP_MNT_DIR" | sed -n 's|ID [0-9]* gen [0-9]* top level [0-9]* path @\([0-9][0-9]*\)$|\1|p' | sort -n`; do
+            if [ -z "$LAST" ]; then
+                LAST="$i"
+                continue
+            fi
+                echo " * checking snaphot $i..."
+            if [ -z "`my_status "$LAST" "$i"`" ]; then
+                delete "$LAST" | sed 's|^|   - |'
+            fi
             LAST="$i"
-            continue
-        fi
-            echo " * checking snaphot $i..."
-        if [ -z "`my_status "$LAST" "$i"`" ]; then
-            delete "$LAST" | sed 's|^|   - |'
-        fi
-        LAST="$i"
-    done
+        done
+    fi
     if [ "$KEEP_MAX_SINGLE" -ge 0 ] || [ "$KEEP_MAX_TIME" -ge 0 ] || [ "$KEEP_MAX_UPDATER" -ge 0 ]; then
         echo "Looking for old snapshots..."
         KEEP_MAX_PRE="$KEEP_MAX_UPDATER"
@@ -457,7 +460,7 @@ case $command in
         list
         ;;
     cleanup)
-        cleanup
+        cleanup "$@"
         ;;
     delete)
         for i in "$@"; do
