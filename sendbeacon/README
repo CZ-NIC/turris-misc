@@ -1,0 +1,11 @@
+This program sends "beacon" to stop boot of Marvell Armada 385
+so it waits for kwboot to load up U-Boot.
+
+Copyright (C) 2016 CZ.NIC
+
+Procedure:
+   1) Connect the serial line to the router
+   2) Run the program.
+   3) Power up the router within 5 sec.
+   4) Wait for the program to finish and run kwboot ... to load up U-Boot.
+
