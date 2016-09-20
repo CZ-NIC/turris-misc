@@ -1,0 +1,11 @@
+
+help="
+list current ip addressed
+"
+
+if [ "$1" = "run" ] ; then
+	echo ipv4:
+	ip -4 address
+	echo ipv6:
+	ip -6 address
+fi

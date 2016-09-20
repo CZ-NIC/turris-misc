@@ -1,0 +1,8 @@
+
+help="
+display output of dmesg
+"
+
+if [ "$1" = "run" ] ; then
+	dmesg
+fi

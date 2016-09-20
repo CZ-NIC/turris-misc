@@ -1,0 +1,8 @@
+
+help="
+get uci firewall config
+"
+
+if [ "$1" = "run" ] ; then
+	cat /etc/config/firewall
+fi

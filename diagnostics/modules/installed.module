@@ -1,0 +1,8 @@
+
+help="
+list installed packages
+"
+
+if [ "$1" = "run" ] ; then
+	opkg list-installed
+fi

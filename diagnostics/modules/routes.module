@@ -1,0 +1,11 @@
+
+help="
+show current routes
+"
+
+if [ "$1" = "run" ] ; then
+	echo ipv4:
+	ip -4 route
+	echo ipv6:
+	ip -6 route
+fi

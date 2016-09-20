@@ -1,0 +1,8 @@
+
+help="
+list current iptables
+"
+
+if [ "$1" = "run" ] ; then
+	iptables-save
+fi

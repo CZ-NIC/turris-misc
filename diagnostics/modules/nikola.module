@@ -1,0 +1,8 @@
+
+help="
+try to send firewall logs to the server
+"
+
+if [ "$1" = "run" ] ; then
+	/usr/share/nikola/bin/nikola.sh
+fi

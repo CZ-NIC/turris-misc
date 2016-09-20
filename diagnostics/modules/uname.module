@@ -1,0 +1,8 @@
+
+help="
+show info about linux kernel
+"
+
+if [ "$1" = "run" ] ; then
+	uname -a
+fi

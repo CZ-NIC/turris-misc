@@ -1,0 +1,8 @@
+
+help="
+try to get serial number from atsha
+"
+
+if [ "$1" = "run" ] ; then
+	atsha204cmd serial-number
+fi

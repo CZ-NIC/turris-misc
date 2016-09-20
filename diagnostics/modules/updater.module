@@ -1,0 +1,8 @@
+
+help="
+try to run updater
+"
+
+if [ "$1" = "run" ] ; then
+	updater.sh -n
+fi
