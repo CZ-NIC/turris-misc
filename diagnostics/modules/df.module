@@ -1,0 +1,10 @@
+
+help="
+identify which devices are mounted
+"
+
+if [ "$1" = "run" ] ; then
+	df -h
+fi
+
+

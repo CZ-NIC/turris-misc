@@ -1,0 +1,10 @@
+
+help="
+how long is the router running
+"
+
+if [ "$1" = "run" ] ; then
+	uptime
+fi
+
+
