@@ -1,0 +1,20 @@
+help="
+info about about the cron
+"
+
+if [ "$1" = "run" ] ; then
+	# is running
+	sh modules/processes.module run | grep cron | grep -v 'grep\|cron\.module\|diagnostics'
+	echo
+
+	# get the package info
+	opkg info $(opkg search "$(which cron)" | cut -d ' ' -f1)
+
+	# md5 + sizes of the files
+	grep '' /etc/cron.d/*
+	echo
+
+	# is cron enabled
+	find /etc/init.d/*cron* -exec md5sum {} \;
+	find /etc/rc.d/*cron* -exec md5sum {} \;
+fi
