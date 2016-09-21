@@ -1,0 +1,12 @@
+Each now module should look like this:
+[a-zA-z_]+.module
+
+It should contain:
+
+help="
+some brief description of the module
+"
+
+if [ "$1" = "run" ] ; then
+	# the actual code with prints something into stdout/stderr
+fi
