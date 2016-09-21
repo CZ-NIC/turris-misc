@@ -46,7 +46,7 @@ print_help() {
 module_run() {
 	local module="$1"
 	printf "############## %s\n" $module
-	sh "$(dirname $0)"/modules/"$module".module run
+	sh "$(dirname $0)"/modules/"$module".module run 2>&1
 	printf "************** %s\n" $module
 }
 
