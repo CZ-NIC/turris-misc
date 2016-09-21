@@ -1,5 +1,7 @@
 #!/bin/sh
 
+MAX_LINES_PER_MODULE=${MAX_LINES_PER_MODULE:-10000}
+
 # read modules and load help
 modules=""
 for mod_file in $(dirname $0)/modules/*.module ; do
@@ -46,7 +48,7 @@ print_help() {
 module_run() {
 	local module="$1"
 	printf "############## %s\n" $module
-	sh "$(dirname $0)"/modules/"$module".module run 2>&1
+	sh "$(dirname $0)"/modules/"$module".module run 2>&1 | tail -n "$MAX_LINES_PER_MODULE"
 	printf "************** %s\n" $module
 }
 
