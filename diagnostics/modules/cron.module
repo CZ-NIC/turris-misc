@@ -10,7 +10,7 @@ if [ "$1" = "run" ] ; then
 	# get the package info
 	opkg info $(opkg search "$(which cron)" | cut -d ' ' -f1)
 
-	# md5 + sizes of the files
+	# read the cron files
 	grep '' /etc/cron.d/*
 	echo
 

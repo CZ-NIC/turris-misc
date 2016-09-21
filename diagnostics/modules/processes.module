@@ -4,9 +4,5 @@ list running processes
 "
 
 if [ "$1" = "run" ] ; then
-	if ls $(which ps) | grep -q busybox ; then
-		ps w
-	else
-		ps aux
-	fi
+	busybox ps w
 fi

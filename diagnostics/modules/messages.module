@@ -1,0 +1,15 @@
+
+help="
+read /var/log/messages
+"
+
+if [ "$1" = "run" ] ; then
+	ls /var/log/messages* | sort -r | while read path; do
+		echo "$path"
+		if [ "${path:$((${#path} - 2))}" = "gz" ] ; then
+			zcat "$path"
+		else
+			cat "$path"
+		fi
+	done
+fi

@@ -1,0 +1,33 @@
+
+help="
+gather dns related informations
+"
+
+if [ "$1" = "run" ] ; then
+	# resolver config
+	uci -q show resolver
+	uci -q show unbound
+	uci -q show kresd
+	echo
+
+	# root key
+	ls -al /etc/root.keys
+	md5sum /etc/root.keys
+	ls -al /etc/unbound/root.key
+	md5sum /etc/unbound/root.key
+	echo
+
+	grep -H '' /etc/resolv.conf*
+
+	# try to resolve some server
+	dig @localhost api.turris.cz  # should pass
+	dig @localhost www.rhybar.cz  # should fail
+	dig @localhost *.wilda.rhybar.0skar.cz  # should fail
+	dig @localhost *.wilda.nsec.0skar.cz A  # should pass
+	dig @localhost *.wild.nsec.0skar.cz  # should pass
+	dig @localhost *.wilda.0skar.cz  # should pass
+	dig @localhost *.wild.0skar.cz  # should pass
+	dig @localhost www.wilda.nsec.0skar.cz  # should pass
+	dig @localhost www.wilda.0skar.cz  # should pass
+	dig @localhost *.wilda.rhybar.ecdsa.0skar.cz  # should fail
+fi
