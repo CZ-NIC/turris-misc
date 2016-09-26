@@ -21,14 +21,14 @@ run () {
 	grep -H '' /etc/resolv.conf*
 
 	# try to resolve some server
-	dig @localhost api.turris.cz  # should pass
-	dig @localhost www.rhybar.cz  # should fail
-	dig @localhost *.wilda.rhybar.0skar.cz  # should fail
-	dig @localhost *.wilda.nsec.0skar.cz A  # should pass
-	dig @localhost *.wild.nsec.0skar.cz  # should pass
-	dig @localhost *.wilda.0skar.cz  # should pass
-	dig @localhost *.wild.0skar.cz  # should pass
-	dig @localhost www.wilda.nsec.0skar.cz  # should pass
-	dig @localhost www.wilda.0skar.cz  # should pass
-	dig @localhost *.wilda.rhybar.ecdsa.0skar.cz  # should fail
+	nslookup api.turris.cz 127.0.0.1  # should pass
+	nslookup www.rhybar.cz 127.0.0.1  # should fail
+	nslookup *.wilda.rhybar.0skar.cz 127.0.0.1  # should fail
+	nslookup *.wilda.nsec.0skar.cz 127.0.0.1  # should pass
+	nslookup *.wild.nsec.0skar.cz 127.0.0.1  # should pass
+	nslookup *.wilda.0skar.cz 127.0.0.1  # should pass
+	nslookup *.wild.0skar.cz 127.0.0.1  # should pass
+	nslookup www.wilda.nsec.0skar.cz 127.0.0.1  # should pass
+	nslookup www.wilda.0skar.cz 127.0.0.1  # should pass
+	nslookup *.wilda.rhybar.ecdsa.0skar.cz 127.0.0.1  # should fail
 }
