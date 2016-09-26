@@ -9,15 +9,6 @@ run () {
 	opkg info cznic-cacert-bundle
 	md5sum $(opkg files cznic-cacert-bundle | sed -n '1!p')
 
-	# print /etc/ssl/certs/
-	ls -nl /etc/ssl/certs/*.crt
-	ls -nl /etc/ssl/certs/*.crt | wc -l
-	ls -nl /etc/ssl/certs/*.0
-	ls -nl /etc/ssl/certs/*.0 | wc -l
-
-	# compare certs with symlinks
-	find /etc/ssl/certs/*.0 -exec readlink {} \; | sort > /tmp/diagnostics-certs-links
-	find /etc/ssl/certs/*.crt | xargs -n1 basename | sort > /tmp/diagnostics-certs-crts
-	diff /tmp/diagnostics-certs-links /tmp/diagnostics-certs-crts | grep '^>\|^<'
-	rm /tmp/diagnostics-certs-links /tmp/diagnostics-certs-crts
+	# print certificates from /etc/ssl/certs/
+	ls -al /etc/ssl/certs/
 }
