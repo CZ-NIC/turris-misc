@@ -1,10 +1,11 @@
+#!modules/module.sh
 
 help="
 list turris firewall settings
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	cat /etc/config/firewall-turris
 	echo
 	md5sum /usr/share/firewall/*
-fi
+}

@@ -2,22 +2,17 @@
 
 MAX_LINES_PER_MODULE=${MAX_LINES_PER_MODULE:-10000}
 
+# enter the script directory
+cd "$(dirname $0)"
+
 # read modules and load help
 modules=""
-for mod_file in $(dirname $0)/modules/*.module ; do
+for mod_file in modules/*.module ; do
 	# load help
 	. "$mod_file"
 	module=$(basename "$mod_file" .module)
 	modules="$modules $module"
 
-	# remove first and last newline
-	newline="
-"
-	help=${help##$newline}
-	help=${help%%$newline}
-
-	# store variable
-	eval help_${module}="\${help}"
 done
 
 is_in_list() {
@@ -34,7 +29,7 @@ is_in_list() {
 module_help() {
 	for module in $modules ; do
 		echo '  '${module}
-		eval echo \"\$help_$module\" | sed 's/^/    /'
+		./modules/"$module".module help | sed 's/^/    /'
 		echo
 	done
 }
@@ -48,7 +43,7 @@ print_help() {
 module_run() {
 	local module="$1"
 	printf "############## %s\n" $module
-	sh "$(dirname $0)"/modules/"$module".module run 2>&1 | tail -n "$MAX_LINES_PER_MODULE"
+	./modules/"$module".module run 2>&1 | tail -n "$MAX_LINES_PER_MODULE"
 	printf "************** %s\n" $module
 }
 

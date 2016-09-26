@@ -1,9 +1,10 @@
+#!modules/module.sh
 
 help="
 gather dns related informations
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	# resolver config
 	uci -q show resolver
 	uci -q show unbound
@@ -30,4 +31,4 @@ if [ "$1" = "run" ] ; then
 	dig @localhost www.wilda.nsec.0skar.cz  # should pass
 	dig @localhost www.wilda.0skar.cz  # should pass
 	dig @localhost *.wilda.rhybar.ecdsa.0skar.cz  # should fail
-fi
+}

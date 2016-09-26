@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 list installed packages
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	opkg list-installed
-fi
+}

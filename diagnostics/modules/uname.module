@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 show info about linux kernel
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	uname -a
-fi
+}

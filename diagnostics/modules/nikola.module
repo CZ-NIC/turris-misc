@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 try to send firewall logs to the server
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	/usr/share/nikola/bin/nikola.sh
-fi
+}

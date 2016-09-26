@@ -3,10 +3,12 @@ Each now module should look like this:
 
 It should contain:
 
+#!modules/module.sh
+
 help="
 some brief description of the module
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	# the actual code with prints something into stdout/stderr
-fi
+}

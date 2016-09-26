@@ -1,10 +1,11 @@
+#!modules/module.sh
 
 help="
 identify which devices are mounted
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	df -h
-fi
+}
 
 

@@ -1,9 +1,10 @@
+#!modules/module.sh
 
 help="
 read /var/log/messages
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	ls /var/log/messages* | sort -r | while read path; do
 		echo "$path"
 		if [ "${path:$((${#path} - 2))}" = "gz" ] ; then
@@ -12,4 +13,4 @@ if [ "$1" = "run" ] ; then
 			cat "$path"
 		fi
 	done
-fi
+}

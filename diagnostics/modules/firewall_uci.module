@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 get uci firewall config
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	cat /etc/config/firewall
-fi
+}

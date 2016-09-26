@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 display output of dmesg
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	dmesg
-fi
+}

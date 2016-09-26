@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 try to run updater
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	updater.sh -n
-fi
+}

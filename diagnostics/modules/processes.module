@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 list running processes
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	busybox ps w
-fi
+}

@@ -1,8 +1,9 @@
+#!modules/module.sh
 
 help="
 list current iptables
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	iptables-save
-fi
+}

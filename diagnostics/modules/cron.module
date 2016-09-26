@@ -1,8 +1,10 @@
+#!modules/module.sh
+
 help="
 info about about the cron
 "
 
-if [ "$1" = "run" ] ; then
+run () {
 	# is running
 	sh modules/processes.module run | grep cron | grep -v 'grep\|cron\.module\|diagnostics'
 	echo
@@ -17,4 +19,4 @@ if [ "$1" = "run" ] ; then
 	# is cron enabled
 	find /etc/init.d/*cron* -exec md5sum {} \;
 	find /etc/rc.d/*cron* -exec md5sum {} \;
-fi
+}
