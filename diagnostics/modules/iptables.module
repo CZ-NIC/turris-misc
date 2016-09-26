@@ -1,9 +1,0 @@
-#!modules/module.sh
-
-help="
-list current iptables
-"
-
-run () {
-	iptables-save
-}

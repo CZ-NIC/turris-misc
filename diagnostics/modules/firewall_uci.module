@@ -1,9 +1,0 @@
-#!modules/module.sh
-
-help="
-get uci firewall config
-"
-
-run () {
-	cat /etc/config/firewall
-}
