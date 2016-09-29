@@ -35,17 +35,41 @@ module_help() {
 }
 
 print_help() {
-	echo "$(basename $0) [module1[ module2[...]]]"
-	echo available modules:
+	echo "$(basename $0) [-b] [-o <file>] [module1[ module2[...]]]"
+	echo "	-b		run in background"
+	echo "	-o <file>	print output to a file"
+	echo
+	echo modules:
 	module_help
 }
 
 module_run() {
 	local module="$1"
-	printf "############## %s\n" $module
-	./modules/"$module".module run 2>&1 | tail -n "$MAX_LINES_PER_MODULE"
-	printf "************** %s\n" $module
+	if [ -n "$OUTPUT_FILE" ] ; then
+		printf "############## %s\n" $module >> "$OUTPUT_FILE".preparing
+		./modules/"$module".module run 2>&1 | tail -n "$MAX_LINES_PER_MODULE" >> "$OUTPUT_FILE".preparing
+		printf "************** %s\n" $module >> "$OUTPUT_FILE".preparing
+	else
+		printf "############## %s\n" $module
+		./modules/"$module".module run 2>&1 | tail -n "$MAX_LINES_PER_MODULE"
+		printf "************** %s\n" $module
+	fi
 }
+
+if [ "$1" = "-b" ] ; then
+	shift
+	"$0" "$@" >/dev/null 2>&1 &
+	exit 0
+fi
+
+if [ "$1" = "-o" ] ; then
+	shift
+	OUTPUT_FILE="$1"
+	# clean the last output files
+	rm -rf "$OUTPUT_FILE"
+	rm -rf "$OUTPUT_FILE".preparing
+	shift
+fi
 
 if [ "$1" = help ] ; then
 	print_help
@@ -66,3 +90,8 @@ for module in $modules_to_run ; do
 		module_run "$module"
 	fi
 done
+
+# rename the output file when finished
+if [ -n "$OUTPUT_FILE" ] ; then
+	mv "$OUTPUT_FILE".preparing "$OUTPUT_FILE"
+fi
