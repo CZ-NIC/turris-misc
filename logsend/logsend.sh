@@ -33,15 +33,15 @@ ping -c1 -w10 api.turris.cz || true # Kick the resolution in early, giving unbou
 # Download CRL for curl.
 get-api-crl
 
-# List of daemon names. Separate by \|, it's put into the regular expression.
-DAEMONS='ucollect\|updater\|updater-hash-check\|watchdog\|oneshot\|nikola\|nethist\|logsend\|turris-firewall-rules'
+# List of daemon names. Separate by |, it's put into the regular expression.
+DAEMONS='ucollect|updater|updater-hash-check|watchdog|oneshot|nikola|nethist|logsend|turris-firewall-rules'
 
 BRANCH=$(getbranch || echo 'unknown')
 
 if [ "$BRANCH" = "test" -o "$BRANCH" = "master" ] ; then
 	# We are using one of the development branches here. Therefore we send
 	# slightly more logs than usual.
-	DAEMONS="$DAEMONS"'\|updater-user\|updater-consolidator\|lcollect'
+	DAEMONS="$DAEMONS"'|updater-user|updater-consolidator|lcollect'
 fi
 # Where to put the logs (don't forget the question mark at the end)
 BASEURL='https://api.turris.cz/logsend/upload.cgi?'
@@ -70,7 +70,7 @@ set +e
 	cat /var/log/messages
 ) | \
 	/usr/bin/whatsnew "$TMPFILE" | \
-	grep "^[^ ][^ ]* *[a-z][a-z]* *\($DAEMONS\)\(\[[0-9]*\]\|\):" | \
+	grep -E "^[^ ][^ ]* *[a-z][a-z]* *($DAEMONS)(\[[0-9]*\]|):" | \
 	tail -n 10000 >"$BUFFER"
 
 (
