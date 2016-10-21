@@ -234,6 +234,7 @@ lock() {
 		if mkdir "$1" >/dev/null 2>&1 ; then
 			return
 		fi
+		sleep 1
 	done
 	echo "Failed to get the lock" >&2
 	exit 1
