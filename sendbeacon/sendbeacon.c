@@ -23,8 +23,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define SERIAL "/dev/ttyUSB0"
-
 #define error_message(args...) fprintf(stderr, args)
 
 int set_interface_attribs(int fd, int speed, int parity)
@@ -73,27 +71,42 @@ void set_blocking(int fd, int block)
 		error_message("error %d setting term attributes", errno);
 }
 
-
-void main(void)
+void print_usage()
 {
-	char *portname = SERIAL;
+	printf("usage: sendbeacon <serial_device> \n");
+}
+
+int main(int argc, char **argv)
+{
+	if (argc != 2) {
+		print_usage();
+		return 1;
+	}
+
+	if (argv[1] == "-h") {
+		print_usage();
+		return 0;
+	}
+
+	char *portname = argv[1];
 
 	int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
 	if(fd < 0) {
-	       	error_message("error %d opening %s: %s", errno, portname, strerror(errno));
-		return;
+		error_message("error %d opening %s: %s", errno, portname, strerror(errno));
+		return 1;
 	}
 
 	set_interface_attribs(fd, B115200, 0);
 	set_blocking(fd, 0);
 
-	printf("Sending beacon in loop. \
-You have 5-10 seconds to power up Omnia.\n");
+	printf("Sending beacon in loop. You have 5-10 seconds to power up Omnia.\n");
 
-	char buf [8]= {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0xbb};
+	char buf [8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0xbb};
 	int i;
-	for(i=0;i<10000;i++)
+	for(i=0; i<10000; i++)
 		write(fd, buf, 8);
 	close(fd);
+
+	return 0;
 }
 
