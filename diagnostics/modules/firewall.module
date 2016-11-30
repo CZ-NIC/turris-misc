@@ -1,0 +1,22 @@
+#!modules/module.sh
+
+help="
+print uci firewall settings and the currnet content of iptables
+"
+
+run () {
+	uci show firewall
+	uci show firewall-turris
+	echo
+
+	# get md5sum of the firewall scripts and rules
+	md5sum /usr/share/firewall/*
+	echo
+
+	# list user defined scripts
+	ls -al /etc/firewall.user
+	ls -al /etc/firewall.d/*
+	echo
+
+	iptables-save
+}

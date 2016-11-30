@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+show info about linux kernel
+"
+
+run () {
+	uname -a
+}

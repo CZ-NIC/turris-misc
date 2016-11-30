@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+list installed packages
+"
+
+run () {
+	opkg list-installed
+}

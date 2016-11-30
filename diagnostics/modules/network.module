@@ -1,0 +1,17 @@
+#!modules/module.sh
+
+help="
+prints uci network settings, current ip addresses and routes
+"
+
+run () {
+	uci show network
+	echo
+	echo ipv4:
+	ip -4 address
+	ip -4 route
+	echo
+	echo ipv6:
+	ip -6 address
+	ip -6 route
+}

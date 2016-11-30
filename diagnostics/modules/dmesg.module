@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+display output of dmesg
+"
+
+run () {
+	dmesg
+}

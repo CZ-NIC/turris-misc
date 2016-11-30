@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+try to send firewall logs to the server
+"
+
+run () {
+	/usr/share/nikola/bin/nikola.sh -n
+}

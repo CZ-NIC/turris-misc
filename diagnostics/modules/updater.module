@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+try to run updater
+"
+
+run () {
+	updater.sh -n
+}

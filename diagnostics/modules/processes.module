@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+list running processes
+"
+
+run () {
+	busybox ps w
+}

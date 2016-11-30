@@ -1,0 +1,9 @@
+#!modules/module.sh
+
+help="
+try to get serial number from atsha
+"
+
+run () {
+	atsha204cmd serial-number
+}

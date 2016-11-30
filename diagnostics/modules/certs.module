@@ -1,0 +1,14 @@
+#!modules/module.sh
+
+help="
+print info regarding certificates
+"
+
+run () {
+	# print cz nic certificates
+	opkg info cznic-cacert-bundle
+	md5sum $(opkg files cznic-cacert-bundle | sed -n '1!p')
+
+	# print certificates from /etc/ssl/certs/
+	ls -al /etc/ssl/certs/
+}
