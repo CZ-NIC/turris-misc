@@ -33,4 +33,4 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always
 keyUsage = digitalSignature,keyEncipherment
 extendedKeyUsage = serverAuth
-crlDistributionPoints = URI:https://api.turris.cz/crl
+crlDistributionPoints = URI:http://api.turris.cz/crl
