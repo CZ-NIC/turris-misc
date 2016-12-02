@@ -46,7 +46,7 @@ fi
 # Where to put the logs (don't forget the question mark at the end)
 BASEURL='https://api.turris.cz/logsend/upload.cgi?'
 RID="$(atsha204cmd serial-number)"
-CERT="/etc/ssl/startcom.pem"
+CERT="/etc/ssl/turris.pem"
 CRL="/etc/ssl/crl.pem"
 TMPFILE="/tmp/logsend.tmp"
 BUFFER="/tmp/logsend.buffer"
