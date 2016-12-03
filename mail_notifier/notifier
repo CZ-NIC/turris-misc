@@ -46,7 +46,7 @@ use_turris_smtp() {
 	local server="smtp.turris.cz"
 	local port="465"
 
-	echo "from $from" >> "$msmtp_cfg_file"
+	echo "from $mail_from" >> "$msmtp_cfg_file"
 	echo "host $server" >> "$msmtp_cfg_file"
 	echo "port $port" >> "$msmtp_cfg_file"
 	echo "tls on" >> "$msmtp_cfg_file"
@@ -65,7 +65,7 @@ parse_user_server_setting() {
 	local port=`uci get user_notify.smtp.port`
 	local security=`uci get user_notify.smtp.security`
 
-	echo "from $from" >> "$msmtp_cfg_file"
+	echo "from $mail_from" >> "$msmtp_cfg_file"
 	echo "host $server" >> "$msmtp_cfg_file"
 	echo "port $port" >> "$msmtp_cfg_file"
 
