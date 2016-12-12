@@ -16,13 +16,13 @@ msg_file="$locker_stamp/msg.mail"
 msmtp_cfg_file="$locker_stamp/msmtp.cfg.$$"
 mail_stamp="sent_by_email"
 
-smtp_enabled=`uci get user_notify.smtp.enable`
-mail_to=`uci get user_notify.smtp.to`
-mail_from=`uci get user_notify.smtp.from`
+smtp_enabled=`uci -q get user_notify.smtp.enable`
+mail_to=`uci -q get user_notify.smtp.to`
+mail_from=`uci -q get user_notify.smtp.from`
 lang="$(uci -q get foris.settings.lang || echo $default_lang)" # Auto-detect from system configuration somehow?
 
 create_msmtp_config() {
-	local turris_smtp=`uci get user_notify.smtp.use_turris_smtp`
+	local turris_smtp=`uci -q get user_notify.smtp.use_turris_smtp`
 
 	echo "account notifier" > "$msmtp_cfg_file"
 	
@@ -37,7 +37,7 @@ create_msmtp_config() {
 }
 
 use_turris_smtp() {
-	mail_from="$(uci get user_notify.smtp.sender_name | cut -d '@' -f1)@notify.turris.cz"
+	mail_from="$(uci -q get user_notify.smtp.sender_name | cut -d '@' -f1)@notify.turris.cz"
 	local username=`atsha204cmd serial-number`
 	local password=`echo "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef" \
 			| atsha204cmd challenge-response \
@@ -59,11 +59,11 @@ use_turris_smtp() {
 }
 
 parse_user_server_setting() {
-	local username=`uci get user_notify.smtp.username 2>/dev/null`
-	local password=`uci get user_notify.smtp.password 2>/dev/null`
-	local server=`uci get user_notify.smtp.server`
-	local port=`uci get user_notify.smtp.port`
-	local security=`uci get user_notify.smtp.security`
+	local username=`uci -q get user_notify.smtp.username`
+	local password=`uci -q get user_notify.smtp.password`
+	local server=`uci -q get user_notify.smtp.server`
+	local port=`uci -q get user_notify.smtp.port`
+	local security=`uci -q get user_notify.smtp.security`
 
 	echo "from $mail_from" >> "$msmtp_cfg_file"
 	echo "host $server" >> "$msmtp_cfg_file"
@@ -92,8 +92,8 @@ parse_user_server_setting() {
 
 schedule_restart() {
 	local max_delay=10 
-	local delay=`uci get user_notify.reboot.delay`
-	local time=`uci get user_notify.reboot.time | tr -d ':'`
+	local delay=`uci -q get user_notify.reboot.delay`
+	local time=`uci -q get user_notify.reboot.time | tr -d ':'`
 	local curr_time=`$date_cmd +"%H%M"`
 
 	if [ $delay -gt $max_delay ]; then
@@ -119,13 +119,13 @@ compose_message() {
 	rm -rf "$msg_file"* > /dev/null 2>&1 || true
 	rm -rf "$locker_stamp/stamps"* > /dev/null 2>&1 || true
 
-	local severity=`uci get user_notify.notifications.severity`
-	local news=`uci get user_notify.notifications.news`
+	local severity=`uci -q get user_notify.notifications.severity`
+	local news=`uci -q get user_notify.notifications.news`
 	
 	local curr_date=`$date_cmd -R`
 	local date_time=`$date_cmd +'%y%m%d.%H%M%S'`
 	local rand=`tr -dc A-Za-z0-9 < /dev/urandom 2>/dev/null | head -c8`
-	local domain=`uci get user_notify.smtp.from | cut -d '@' -f2`
+	local domain=`uci -q get user_notify.smtp.from | cut -d '@' -f2`
 	local msg_id="<$date_time.$rand@$domain>"
 	local hostname=`cat /proc/sys/kernel/hostname`
 	if [ "$lang" = "cs" ]; then
