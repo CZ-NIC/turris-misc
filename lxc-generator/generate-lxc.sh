@@ -44,8 +44,8 @@ get_gentoo_url() {
 }
 
 get_omnia_url() {
-    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/ | sed -n 's|.*>\(omnia-medkit-2[^<]*gz\)<.*|\1|p'`"
-    echo "https://api.turris.cz/openwrt-repo/omnia/$REL"
+    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/medkit | sed -n 's|.*>\(omnia-medkit-2[^<]*full[^<]*gz\)<.*|\1|p'`"
+    echo "https://api.turris.cz/openwrt-repo/omnia/medkit/$REL"
 }
 
 get_linaro_latest() {
@@ -78,6 +78,7 @@ add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
 add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
 add_image "openSUSE" "13.2" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/13.2/appliances/openSUSE-13.2-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
+add_image "openSUSE" "42.2" "armv7l" "http://download.opensuse.org/repositories/home:/-miska-:/arm/openSUSE_Leap_42.2/openSUSE-Leap42.2-ARM-JeOS-rootfs.armv7l.tbz"
 add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
 add_image "Ubuntu" "Yakkety" "armv7l" "`get_lxc_url ubuntu/yakkety/armhf`"
