@@ -28,4 +28,4 @@
 set -e
 
 export GNUPGHOME=$HOME/.git-gpg
-gpg --keyserver hkp://pgp.mit.edu --refresh-keys
+gpg --keyserver hkp://sks.labs.nic.cz --refresh-keys

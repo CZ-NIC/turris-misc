@@ -43,11 +43,6 @@ get_gentoo_url() {
     echo "http://distfiles.gentoo.org/releases/$1/autobuilds/$REL"
 }
 
-get_omnia_url() {
-    REL="`wget -O - https://api.turris.cz/openwrt-repo/omnia/medkit | sed -n 's|.*>\(omnia-medkit-2[^<]*full[^<]*gz\)<.*|\1|p'`"
-    echo "https://api.turris.cz/openwrt-repo/omnia/medkit/$REL"
-}
-
 get_linaro_latest() {
     case "$1" in
         debian)
@@ -72,8 +67,8 @@ get_lxc_url() {
     echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
 }
 
-add_image "Turris_OS" "stable" "armv7l" "`get_omnia_url`"
-add_image "Turris_OS" "stable" "ppc" "https://api.turris.cz/openwrt-repo/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz"
+add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest-full.tar.gz
+add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz"
 add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
 add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
