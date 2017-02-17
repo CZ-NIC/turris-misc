@@ -197,20 +197,20 @@ compose_message() {
 			cat "$msg_file.errors" >> "$msg_file.tmp"
 		fi
 	fi
-	if [ -f "$msg_file.updates" ]; then
-		cat "$locker_stamp/stamps.updates" >> "$locker_stamp/stamps"
-
-		if [ "$severity" -ge 3 ]; then
-			echo -e "##### $heading_updates #####" >> "$msg_file.tmp"
-			cat "$msg_file.updates" >> "$msg_file.tmp"
-		fi
-	fi
 	if [ -f "$msg_file.news" ]; then
 		cat "$locker_stamp/stamps.news" >> "$locker_stamp/stamps"
 
 		if [ "$news" -gt 0 ]; then
 			echo -e "##### $heading_news #####" >> "$msg_file.tmp"
 			cat "$msg_file.news" >> "$msg_file.tmp"
+		fi
+	fi
+	if [ -f "$msg_file.updates" ]; then
+		cat "$locker_stamp/stamps.updates" >> "$locker_stamp/stamps"
+
+		if [ "$severity" -ge 3 ]; then
+			echo -e "##### $heading_updates #####" >> "$msg_file.tmp"
+			cat "$msg_file.updates" >> "$msg_file.tmp"
 		fi
 	fi
 
