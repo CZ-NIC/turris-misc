@@ -1,0 +1,14 @@
+#!modules/module.sh
+
+help="
+shows mounted devices and examines files in /tmp/
+"
+
+run () {
+	df -h
+	echo
+
+	du -ahc /tmp/
+}
+
+
