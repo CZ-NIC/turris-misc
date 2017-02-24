@@ -20,4 +20,5 @@ set +e
 curl -k https://api.turris.cz/crl -o "$DIR/crl.pem" && mv "$DIR/crl.pem" /tmp/crl.pem
 # Even if it fails, we want to return success. That way, any possible previous
 # version of the CRL may still be used unless it expired.
-true
+# The only case when we want to return failure is when the file /tmp/crl.pem doesn't exist.
+[ -f /tmp/crl.pem ]
