@@ -14,6 +14,7 @@ force_mode = None
 lockfile = '/var/run/sfpswitch.lock'
 debug = False
 daemon = False
+drive_led = False
 
 
 import sys
@@ -86,7 +87,7 @@ class GPIO:
 		return self.fd.fileno()
 
 
-class LED:
+class OmniaLED:
 	def __init__(self, sysfsdir):
 		self.sysfsdir = sysfsdir
 
@@ -101,6 +102,14 @@ class LED:
 	def set_brightness(self, light):
 		with open(self._get_file('brightness'), 'w') as f:
 			f.write('255' if light else '0')
+
+class LED:
+        def __init__(self, sysfsdir):
+            pass
+        def set_autonomous(self, aut):
+            pass
+        def set_brightness(self, light):
+            pass
 
 
 class EEPROM:
@@ -214,7 +223,10 @@ class Omnia:
 		self.sfplos = GPIO(self.sfplos_pin, 'in', edge='both')
 		self.sfpflt = GPIO(self.sfpflt_pin, 'in', edge='both')
 		self.sfpdis = GPIO(self.sfpdis_pin, 'out', edge=None, value=0)
-		self.led = LED(self.wan_led)
+                if drive_led:
+    		        self.led = OmniaLED(self.wan_led)
+                else:
+                        self.led = LED(None)
 
 	def set_nic_mode(self, mode):
 		l('Switching NIC mode to %s.' % mode)
