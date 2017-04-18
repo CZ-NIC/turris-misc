@@ -19,6 +19,10 @@ run () {
 	grep -H '' "${ROOTKEYFILE}"
 	echo
 
+	echo "== resolver process =="
+	RESOLVER="$(uci get resolver.common.prefered_resolver)"
+	ps w | grep ${RESOLVER}
+
 	# try to resolve some server
 	nslookup api.turris.cz 127.0.0.1  # should pass
 	nslookup www.rhybar.cz 127.0.0.1  # should fail
