@@ -68,4 +68,7 @@ run () {
 	run_${QTOOL} www.wilda.nsec.0skar.cz  # should pass
 	run_${QTOOL} www.wilda.0skar.cz  # should pass
 	run_${QTOOL} *.wilda.rhybar.ecdsa.0skar.cz  # should fail
+
+	echo "== ${RESOLVER} /var/log/messages =="
+	grep -H "${RESOLVER}" /var/log/messages
 }
