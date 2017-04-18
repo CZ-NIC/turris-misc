@@ -62,6 +62,10 @@ run () {
 
 	echo "== resolution attempts =="
 	run_${QTOOL} api.turris.cz  # should pass
+	run_${QTOOL} www.google.com  # should pass
+	run_${QTOOL} www.facebook.com  # should pass
+	run_${QTOOL} www.youtube.com  # should pass
+
 	run_${QTOOL} www.rhybar.cz  # should fail
 	run_${QTOOL} *.wilda.rhybar.0skar.cz  # should fail
 	run_${QTOOL} *.wilda.nsec.0skar.cz  # should pass
