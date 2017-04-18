@@ -7,8 +7,6 @@ gather dns related informations
 run () {
 	# resolver config
 	uci -q show resolver
-	uci -q show unbound
-	uci -q show kresd
 	echo
 
 	# root key
