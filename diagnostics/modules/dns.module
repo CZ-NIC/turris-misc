@@ -9,11 +9,11 @@ run () {
 	uci -q show resolver
 	echo
 
-	# root key
-	ls -al /etc/root.keys
-	md5sum /etc/root.keys
-	ls -al /etc/unbound/root.key
-	md5sum /etc/unbound/root.key
+	echo "== DNSSEC root key file =="
+	ROOTKEYFILE=$(uci get resolver.common.keyfile)
+	ls -al "${ROOTKEYFILE}"
+	md5sum "${ROOTKEYFILE}"
+	grep -H '' "${ROOTKEYFILE}"
 	echo
 
 	grep -H '' /etc/resolv.conf*
