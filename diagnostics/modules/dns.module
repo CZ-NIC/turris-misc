@@ -9,14 +9,15 @@ run () {
 	uci -q show resolver
 	echo
 
+	echo "== resolv.conf* =="
+	grep -H '' /etc/resolv.conf* /tmp/resolv.conf*
+
 	echo "== DNSSEC root key file =="
 	ROOTKEYFILE=$(uci get resolver.common.keyfile)
 	ls -al "${ROOTKEYFILE}"
 	md5sum "${ROOTKEYFILE}"
 	grep -H '' "${ROOTKEYFILE}"
 	echo
-
-	grep -H '' /etc/resolv.conf*
 
 	# try to resolve some server
 	nslookup api.turris.cz 127.0.0.1  # should pass
