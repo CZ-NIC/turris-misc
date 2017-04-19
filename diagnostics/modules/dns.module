@@ -55,9 +55,6 @@ run () {
 	then
 		echo "== configured trust anchors =="
 		run_kresd_command "trust_anchors"
-
-		echo "== enable verbose logging (reboot to disable it) =="
-		run_kresd_command "verbose(true)"
 	fi
 
 	echo "== resolution attempts =="
