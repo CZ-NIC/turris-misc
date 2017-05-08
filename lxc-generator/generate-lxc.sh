@@ -15,7 +15,11 @@ add_image() {
     echo "$1;$2;$3;default;$DATE;/images/$1/$2/$3/$DATE" >> meta/1.0/index-system.2
     mkdir -p "images/$1/$2/$3/$DATE"
     pushd "images/$1/$2/$3/$DATE"
-    wget "$4" || die "Downloading $1 $2 for $3 from $4 failed"
+    if [ -f "$4" ]; then
+        mv "$4" .
+    else
+        wget "$4" || die "Downloading $1 $2 for $3 from $4 failed"
+    fi
     FILE="`ls -1`"
     if expr "$FILE" : .*\\.tbz || expr "$FILE" : .*\\.tar.bz2; then
         bzip2 -d "$FILE"
@@ -67,9 +71,21 @@ get_lxc_url() {
     echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
 }
 
+get_arch() {
+    wget http://os.archlinuxarm.org/os/ArchLinuxARM-mirabox-latest.tar.gz && \
+    gzip -d ArchLinuxARM-mirabox-latest.tar.gz && \
+    tar -xf ArchLinuxARM-mirabox-latest.tar ./etc/fstab && \
+    sed -i 's|/|#/|' etc/fstab && \
+    tar -uf ArchLinuxARM-mirabox-latest.tar --owner=root:0 --group=root:0 ./etc/fstab
+    rm -f etc/fstab
+    rmdir etc
+}
+
 add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest-full.tar.gz
 add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz"
 add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
+get_arch
+add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
 add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
 add_image "openSUSE" "13.2" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/13.2/appliances/openSUSE-13.2-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
