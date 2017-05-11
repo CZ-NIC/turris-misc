@@ -5,7 +5,7 @@ try to run updater and read /tmp/updater_crash.log
 "
 
 run () {
-	updater.sh -n
+	updater.sh -n -e TRACE
 	echo
 	local CRASH_LOG="/tmp/updater_crash.log"
 	if [ -e "$CRASH_LOG" ]; then
