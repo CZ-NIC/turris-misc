@@ -8,7 +8,7 @@ run () {
 	df -h
 	echo
 
-	du -ahc /tmp/
+	du -ahcx /tmp/
 }
 
 
