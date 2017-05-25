@@ -48,3 +48,25 @@ gpg-refresh
 
 Refresh keys from a keyserver. This will import any revocations or possible new
 signatures on the keys. It is recommended to put into a cron script.
+
+Adding a new key
+----------------
+
+On some desktop:
+
+  export GNUPGHOME=$HOME/.git-gpg
+  ./gen-gpg
+  gpg --recv-keys <THE_KEY> # Hopefully already signed by other trusted key.
+  gpg --export --armor >trusted_keys.gpg
+  # If the key wasn't trusted and should be, set trust by gpg --edit-key <THE_KEY> and then:
+  gpg --export-ownertrust >trust.txt
+  export GNUPGHOME=
+  git commit -a
+  git push
+
+On each and every of the build machines (as the user `beast`):
+
+  cd misc
+  git pull
+  git show # Check the git hash matches the one on the desktop
+  ./gen-gpg
