@@ -1,0 +1,144 @@
+From 81f6e227312b2d522a44380812f9fae6376b5278 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
+Date: Fri, 5 May 2017 14:58:48 +0200
+Subject: [PATCH 1/5] Add usign argument to set path to usign tool
+
+---
+ src/lib/arguments.c           |  2 ++
+ src/lib/arguments.h           |  2 ++
+ src/lib/autoload/a_08_uri.lua |  9 ++++++++-
+ src/opkg-trans/main.c         |  8 +++++++-
+ src/pkgupdate/main.c          | 10 +++++++++-
+ 5 files changed, 28 insertions(+), 3 deletions(-)
+
+diff --git a/src/lib/arguments.c b/src/lib/arguments.c
+index b428da9..7b41dd6 100644
+--- a/src/lib/arguments.c
++++ b/src/lib/arguments.c
+@@ -68,6 +68,8 @@ static const char *opt_help[COT_LAST] = {
+ 		"--ask-approval=<report-file>	Require user's approval to proceed (abort if --approve with appropriate ID is not present, plan of action is put into the report-file if approval is needed)\n",
+ 	[COT_APPROVE] =
+ 		"--approve=<id>			Approve actions with given ID (multiple allowed, from a corresponding report-file).\n",
++	[COT_USIGN] =
++		"--usign=<path>			Path to usign tool used to verify packages signature. In default /usr/bin/usign.\n",
+ 	[COT_TASK_LOG] =
+ 		"--task-log=<file>		Append list of executed tasks into a log file.\n"
+ };
+diff --git a/src/lib/arguments.h b/src/lib/arguments.h
+index 7e5388a..a545592 100644
+--- a/src/lib/arguments.h
++++ b/src/lib/arguments.h
+@@ -58,6 +58,8 @@ enum cmd_op_type {
+ 	COT_SYSLOG_NAME,
+ 	// Log tasks into a file
+ 	COT_TASK_LOG,
++	// Path to usign tool
++	COT_USIGN,
+ 	// Argument isn't option.
+ 	COT_NO_OP,
+ 	// Automatic last dummy value to know size of enum
+diff --git a/src/lib/autoload/a_08_uri.lua b/src/lib/autoload/a_08_uri.lua
+index 8c49428..24b1a1d 100644
+--- a/src/lib/autoload/a_08_uri.lua
++++ b/src/lib/autoload/a_08_uri.lua
+@@ -219,6 +219,13 @@ local function tmpstore(content)
+ 	return fname
+ end
+ 
++-- Path to usign tool (can be overriden usign usign_exec_set)
++local usign_exec = "/usr/bin/usign"
++
++function usign_exec_set(path)
++	usign_exec = path
++end
++
+ function signature_check(content, key, signature)
+ 	local ok
+ 	local fcontent = tmpstore(content)
+@@ -226,7 +233,7 @@ function signature_check(content, key, signature)
+ 	local fsig = tmpstore(signature)
+ 	events_wait(run_command(function (ecode)
+ 		ok = (ecode == 0)
+-	end, nil, nil, -1, -1, '/usr/bin/usign', '-V', '-p', fkey, '-x', fsig, '-m', fcontent))
++	end, nil, nil, -1, -1, usign_exec, '-V', '-p', fkey, '-x', fsig, '-m', fcontent))
+ 	os.remove(fcontent)
+ 	os.remove(fkey)
+ 	os.remove(fsig)
+diff --git a/src/opkg-trans/main.c b/src/opkg-trans/main.c
+index c8d5228..b8654ac 100644
+--- a/src/opkg-trans/main.c
++++ b/src/opkg-trans/main.c
+@@ -39,7 +39,7 @@ static bool results_interpret(struct interpreter *interpreter, size_t result_cou
+ }
+ 
+ static const enum cmd_op_type cmd_op_allows[] = {
+-	COT_JOURNAL_ABORT, COT_JOURNAL_RESUME, COT_INSTALL, COT_REMOVE, COT_ROOT_DIR, COT_SYSLOG_LEVEL, COT_STDERR_LEVEL, COT_SYSLOG_NAME, COT_REEXEC, COT_LAST };
++	COT_JOURNAL_ABORT, COT_JOURNAL_RESUME, COT_INSTALL, COT_REMOVE, COT_ROOT_DIR, COT_SYSLOG_LEVEL, COT_STDERR_LEVEL, COT_SYSLOG_NAME, COT_REEXEC, COT_USIGN, COT_LAST };
+ 
+ static void print_help() {
+ 	fputs("Usage: opkg-trans [OPTION]...\n", stderr);
+@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
+ 	bool transaction_run = false;
+ 	bool trans_ok = true;
+ 	bool early_exit = false;
++	const char *usign_exec = NULL;
+ 	for (; op->type != COT_EXIT && op->type != COT_CRASH; op ++)
+ 		switch (op->type) {
+ 			case COT_HELP: {
+@@ -103,6 +104,11 @@ int main(int argc, char *argv[]) {
+ 				ASSERT_MSG(!err, "%s", err);
+ 				break;
+ 			}
++			case COT_USIGN: {
++				const char *err = interpreter_call(interpreter, "uri.usign_exec_set", NULL, "s", usign_exec);
++				ASSERT_MSG(!err, "%s", err);
++				break;
++			}
+ 			case COT_SYSLOG_LEVEL: {
+ 				enum log_level level = log_level_get(op->parameter);
+ 				ASSERT_MSG(level != LL_UNKNOWN, "Unknown log level %s", op->parameter);
+diff --git a/src/pkgupdate/main.c b/src/pkgupdate/main.c
+index 4954b3a..cb0147c 100644
+--- a/src/pkgupdate/main.c
++++ b/src/pkgupdate/main.c
+@@ -46,7 +46,7 @@ static bool results_interpret(struct interpreter *interpreter, size_t result_cou
+ }
+ 
+ static const enum cmd_op_type cmd_op_allows[] = {
+-	COT_BATCH, COT_NO_OP, COT_REEXEC, COT_STATE_LOG, COT_ROOT_DIR, COT_SYSLOG_LEVEL, COT_STDERR_LEVEL, COT_SYSLOG_NAME, COT_ASK_APPROVAL, COT_APPROVE, COT_TASK_LOG, COT_LAST
++	COT_BATCH, COT_NO_OP, COT_REEXEC, COT_STATE_LOG, COT_ROOT_DIR, COT_SYSLOG_LEVEL, COT_STDERR_LEVEL, COT_SYSLOG_NAME, COT_ASK_APPROVAL, COT_APPROVE, COT_TASK_LOG, COT_USIGN, COT_LAST
+ };
+ 
+ static void print_help() {
+@@ -115,6 +115,7 @@ int main(int argc, char *argv[]) {
+ 	const char **approvals = NULL;
+ 	size_t approval_count = 0;
+ 	const char *task_log = NULL;
++	const char *usign_exec = NULL;
+ 	for (; op->type != COT_EXIT && op->type != COT_CRASH; op ++)
+ 		switch (op->type) {
+ 			case COT_HELP: {
+@@ -169,6 +170,9 @@ int main(int argc, char *argv[]) {
+ 			case COT_TASK_LOG:
+ 				task_log = op->parameter;
+ 				break;
++			case COT_USIGN:
++				usign_exec = op->parameter;
++				break;
+ 			default:
+ 				DIE("Unknown COT");
+ 		}
+@@ -187,6 +191,10 @@ int main(int argc, char *argv[]) {
+ 		ASSERT_MSG(!err, "%s", err);
+ 	} else
+ 		root_dir = "";
++	if (usign_exec) {
++		const char *err = interpreter_call(interpreter, "uri.usign_exec_set", NULL, "s", usign_exec);
++		ASSERT_MSG(!err, "%s", err);
++	}
+ 	bool trans_ok = true;
+ 	if (exit_type != COT_EXIT)
+ 		goto CLEANUP;
+-- 
+2.13.0
+

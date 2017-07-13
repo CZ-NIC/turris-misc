@@ -1,0 +1,43 @@
+From 0005b92915a9cb2d51950f36daf5b1127f1a316c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
+Date: Tue, 9 May 2017 16:26:06 +0200
+Subject: [PATCH 2/5] Fix usign argument
+
+I forgot to actually add it.
+---
+ src/lib/arguments.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/lib/arguments.c b/src/lib/arguments.c
+index 7b41dd6..8fbbf8b 100644
+--- a/src/lib/arguments.c
++++ b/src/lib/arguments.c
+@@ -81,6 +81,7 @@ enum option_val {
+ 	OPT_ASK_APPROVAL_VAL,
+ 	OPT_APPROVE_VAL,
+ 	OPT_TASK_LOG_VAL,
++	OPT_USIGN,
+ 	OPT_LAST
+ };
+ 
+@@ -96,6 +97,7 @@ static const struct option opt_long[] = {
+ 	{ .name = "ask-approval", .has_arg = required_argument, .val = OPT_ASK_APPROVAL_VAL },
+ 	{ .name = "approve", .has_arg = required_argument, .val = OPT_APPROVE_VAL },
+ 	{ .name = "task-log", .has_arg = required_argument, .val = OPT_TASK_LOG_VAL },
++	{ .name = "usign", .has_arg = required_argument, .val = OPT_USIGN },
+ 	{ .name = NULL }
+ };
+ 
+@@ -113,7 +115,8 @@ static const struct simple_opt {
+ 	[OPT_STATE_LOG_VAL] = { COT_STATE_LOG, false, true },
+ 	[OPT_ASK_APPROVAL_VAL] = { COT_ASK_APPROVAL, true, true },
+ 	[OPT_APPROVE_VAL] = { COT_APPROVE, true, true },
+-	[OPT_TASK_LOG_VAL] = { COT_TASK_LOG, true, true }
++	[OPT_TASK_LOG_VAL] = { COT_TASK_LOG, true, true },
++	[OPT_USIGN] = { COT_USIGN, true, true }
+ };
+ 
+ // Builds new result with any number of error messages. But specify their count as
+-- 
+2.13.0
+

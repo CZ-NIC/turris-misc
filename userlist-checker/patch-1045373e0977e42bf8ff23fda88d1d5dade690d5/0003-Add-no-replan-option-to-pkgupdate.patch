@@ -1,0 +1,194 @@
+From 08493541a7bda0519929bb39147e763a1ae6c72c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
+Date: Mon, 22 May 2017 10:20:35 +0200
+Subject: [PATCH 3/5] Add no-replan option to pkgupdate
+
+When we are not using pkgupdate from packages (for example when we are
+running it in different root) then there is no reason to do replan. It
+might even cause problems when we are installing clean to clean root.
+This new option allows can be specified to deny replanning and that way
+ensure that everything is installed at once.
+---
+ src/lib/arguments.c               |  9 ++++++++-
+ src/lib/arguments.h               |  2 ++
+ src/lib/autoload/a_12_planner.lua |  4 ++--
+ src/lib/autoload/a_13_updater.lua |  9 +++++++--
+ src/pkgupdate/main.c              | 10 +++++++++-
+ tests/planner.lua                 |  2 +-
+ 6 files changed, 29 insertions(+), 7 deletions(-)
+
+diff --git a/src/lib/arguments.c b/src/lib/arguments.c
+index 8fbbf8b..fa7f270 100644
+--- a/src/lib/arguments.c
++++ b/src/lib/arguments.c
+@@ -70,6 +70,8 @@ static const char *opt_help[COT_LAST] = {
+ 		"--approve=<id>			Approve actions with given ID (multiple allowed, from a corresponding report-file).\n",
+ 	[COT_USIGN] =
+ 		"--usign=<path>			Path to usign tool used to verify packages signature. In default /usr/bin/usign.\n",
++	[COT_NO_REPLAN] =
++		"--no-replan			Don't replan. Install everyting at once. Use this if updater you are running isn't from packages it installs.\n",
+ 	[COT_TASK_LOG] =
+ 		"--task-log=<file>		Append list of executed tasks into a log file.\n"
+ };
+@@ -82,6 +84,7 @@ enum option_val {
+ 	OPT_APPROVE_VAL,
+ 	OPT_TASK_LOG_VAL,
+ 	OPT_USIGN,
++	OPT_NO_REPLAN,
+ 	OPT_LAST
+ };
+ 
+@@ -98,6 +101,7 @@ static const struct option opt_long[] = {
+ 	{ .name = "approve", .has_arg = required_argument, .val = OPT_APPROVE_VAL },
+ 	{ .name = "task-log", .has_arg = required_argument, .val = OPT_TASK_LOG_VAL },
+ 	{ .name = "usign", .has_arg = required_argument, .val = OPT_USIGN },
++	{ .name = "no-replan", .has_arg = no_argument, .val = OPT_NO_REPLAN },
+ 	{ .name = NULL }
+ };
+ 
+@@ -116,7 +120,8 @@ static const struct simple_opt {
+ 	[OPT_ASK_APPROVAL_VAL] = { COT_ASK_APPROVAL, true, true },
+ 	[OPT_APPROVE_VAL] = { COT_APPROVE, true, true },
+ 	[OPT_TASK_LOG_VAL] = { COT_TASK_LOG, true, true },
+-	[OPT_USIGN] = { COT_USIGN, true, true }
++	[OPT_USIGN] = { COT_USIGN, true, true },
++	[OPT_NO_REPLAN] = { COT_NO_REPLAN, false, true }
+ };
+ 
+ // Builds new result with any number of error messages. But specify their count as
+@@ -220,6 +225,8 @@ struct cmd_op *cmd_args_parse(int argc, char *argv[], const enum cmd_op_type acc
+ 			case COT_SYSLOG_NAME:
+ 			case COT_ASK_APPROVAL:
+ 			case COT_APPROVE:
++			case COT_USIGN:
++			case COT_NO_REPLAN:
+ 			case COT_TASK_LOG: {
+ 				struct cmd_op tmp = result[i];
+ 				for (size_t j = i; j > set_pos; j --)
+diff --git a/src/lib/arguments.h b/src/lib/arguments.h
+index a545592..bcc6857 100644
+--- a/src/lib/arguments.h
++++ b/src/lib/arguments.h
+@@ -60,6 +60,8 @@ enum cmd_op_type {
+ 	COT_TASK_LOG,
+ 	// Path to usign tool
+ 	COT_USIGN,
++	// Don't replan (do whole install at once)
++	COT_NO_REPLAN,
+ 	// Argument isn't option.
+ 	COT_NO_OP,
+ 	// Automatic last dummy value to know size of enum
+diff --git a/src/lib/autoload/a_12_planner.lua b/src/lib/autoload/a_12_planner.lua
+index ce5df60..6836c62 100644
+--- a/src/lib/autoload/a_12_planner.lua
++++ b/src/lib/autoload/a_12_planner.lua
+@@ -193,7 +193,7 @@ Go through the list of requests on the input. Pass the needed ones through
+ and leave the extra (eg. requiring already installed package) out. Add
+ requests to remove not required packages.
+ ]]
+-function filter_required(status, requests)
++function filter_required(status, requests, allow_replan)
+ 	local installed = {}
+ 	for pkg, desc in pairs(status) do
+ 		if not desc.Status or desc.Status[3] == "installed" then
+@@ -252,7 +252,7 @@ function filter_required(status, requests)
+ 	for i, request in ipairs(result) do
+ 		if wipe then
+ 			result[i] = nil
+-		elseif request.action == "require" and request.modifier.replan then
++		elseif request.action == "require" and request.modifier.replan and allow_replan then
+ 			wipe = true
+ 		end
+ 	end
+diff --git a/src/lib/autoload/a_13_updater.lua b/src/lib/autoload/a_13_updater.lua
+index f5d2e87..cbeb793 100644
+--- a/src/lib/autoload/a_13_updater.lua
++++ b/src/lib/autoload/a_13_updater.lua
+@@ -38,6 +38,11 @@ module "updater"
+ 
+ local cleanup_actions = {}
+ 
++local allow_replan = true
++function disable_replan()
++	allow_replan = false
++end
++
+ function prepare(entrypoint)
+ 	-- Get the top-level script
+ 	local tlc = sandbox.new('Full')
+@@ -57,7 +62,7 @@ function prepare(entrypoint)
+ 	local required = planner.required_pkgs(postprocess.available_packages, requests.content_requests)
+ 	local run_state = backend.run_state()
+ 	backend.flags_load()
+-	local tasks = planner.filter_required(run_state.status, required)
++	local tasks = planner.filter_required(run_state.status, required, allow_replan)
+ 	--[[
+ 	Start download of all the packages. They all start (or queue, if there are
+ 	too many). We then start taking them one by one, but that doesn't stop it
+@@ -114,7 +119,7 @@ function prepare(entrypoint)
+ end
+ 
+ function cleanup(success)
+-	if cleanup_actions.replan then
++	if cleanup_actions.replan and allow_replan then
+ 		reexec()
+ 	end
+ 	if success then
+diff --git a/src/pkgupdate/main.c b/src/pkgupdate/main.c
+index cb0147c..6b0a446 100644
+--- a/src/pkgupdate/main.c
++++ b/src/pkgupdate/main.c
+@@ -46,7 +46,7 @@ static bool results_interpret(struct interpreter *interpreter, size_t result_cou
+ }
+ 
+ static const enum cmd_op_type cmd_op_allows[] = {
+-	COT_BATCH, COT_NO_OP, COT_REEXEC, COT_STATE_LOG, COT_ROOT_DIR, COT_SYSLOG_LEVEL, COT_STDERR_LEVEL, COT_SYSLOG_NAME, COT_ASK_APPROVAL, COT_APPROVE, COT_TASK_LOG, COT_USIGN, COT_LAST
++	COT_BATCH, COT_NO_OP, COT_REEXEC, COT_STATE_LOG, COT_ROOT_DIR, COT_SYSLOG_LEVEL, COT_STDERR_LEVEL, COT_SYSLOG_NAME, COT_ASK_APPROVAL, COT_APPROVE, COT_TASK_LOG, COT_USIGN, COT_NO_REPLAN, COT_LAST
+ };
+ 
+ static void print_help() {
+@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
+ 	size_t approval_count = 0;
+ 	const char *task_log = NULL;
+ 	const char *usign_exec = NULL;
++	bool no_replan = false;
+ 	for (; op->type != COT_EXIT && op->type != COT_CRASH; op ++)
+ 		switch (op->type) {
+ 			case COT_HELP: {
+@@ -173,6 +174,9 @@ int main(int argc, char *argv[]) {
+ 			case COT_USIGN:
+ 				usign_exec = op->parameter;
+ 				break;
++			case COT_NO_REPLAN:
++				no_replan = true;
++				break;
+ 			default:
+ 				DIE("Unknown COT");
+ 		}
+@@ -195,6 +199,10 @@ int main(int argc, char *argv[]) {
+ 		const char *err = interpreter_call(interpreter, "uri.usign_exec_set", NULL, "s", usign_exec);
+ 		ASSERT_MSG(!err, "%s", err);
+ 	}
++	if (no_replan) {
++		const char *err = interpreter_call(interpreter, "updater.disable_replan", NULL, "");
++		ASSERT_MSG(!err, "%s", err);
++	}
+ 	bool trans_ok = true;
+ 	if (exit_type != COT_EXIT)
+ 		goto CLEANUP;
+diff --git a/tests/planner.lua b/tests/planner.lua
+index 8895b14..47808ae 100644
+--- a/tests/planner.lua
++++ b/tests/planner.lua
+@@ -428,7 +428,7 @@ function test_replan()
+ 			modifier = {}
+ 		}
+ 	}
+-	local result = planner.filter_required({}, requests)
++	local result = planner.filter_required({}, requests, true)
+ 	assert_table_equal({
+ 		requests[1]
+ 	}, result)
+-- 
+2.13.0
+

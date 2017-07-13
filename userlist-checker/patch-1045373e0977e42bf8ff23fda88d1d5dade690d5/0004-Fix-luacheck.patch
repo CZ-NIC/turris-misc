@@ -1,0 +1,33 @@
+From f703d1abe18a2d4dbf0a244a96a6a4c6eec213a1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
+Date: Thu, 13 Jul 2017 16:04:12 +0200
+Subject: [PATCH 4/5] Fix luacheck
+
+---
+ tests/luacheck.config | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tests/luacheck.config b/tests/luacheck.config
+index 78f5a94..8430c70 100644
+--- a/tests/luacheck.config
++++ b/tests/luacheck.config
+@@ -42,7 +42,7 @@ files["src/lib/autoload/a_07_transaction.lua"] = {
+ 
+ files["src/lib/autoload/a_08_uri.lua"] = {
+ 	globals = {
+-		"wait", "signature_check", "parse", "new"
++		"wait", "signature_check", "parse", "new", "usign_exec_set"
+ 	}
+ }
+ 
+@@ -72,6 +72,6 @@ files["src/lib/autoload/a_12_planner.lua"] = {
+ 
+ files["src/lib/autoload/a_13_updater.lua"] = {
+ 	globals = {
+-		"prepare", "cleanup"
++		"prepare", "cleanup", "disable_replan"
+ 	}
+ }
+-- 
+2.13.0
+
