@@ -74,11 +74,7 @@ get_lxc_url() {
 get_arch() {
     wget http://os.archlinuxarm.org/os/ArchLinuxARM-mirabox-latest.tar.gz && \
     gzip -d ArchLinuxARM-mirabox-latest.tar.gz && \
-    tar -xf ArchLinuxARM-mirabox-latest.tar ./etc/fstab && \
-    sed -i 's|/|#/|' etc/fstab && \
-    tar -uf ArchLinuxARM-mirabox-latest.tar --owner=root:0 --group=root:0 ./etc/fstab
-    rm -f etc/fstab
-    rmdir etc
+    sed -i 's|/dev/sda1[[:blank:]]\([[:blank:]]*\)/boot\([[:blank:]]*\)vfat|#/dev/sda1\1/boot\2vfat|' ArchLinuxARM-mirabox-latest.tar
 }
 
 add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest-full.tar.gz
