@@ -101,5 +101,4 @@ fi
 .updater/bin/pkgupdate --no-replan --usign=.usign/usign -R $ABSOUT --batch file://$UPDATER_CONF
 
 # Do cleanups
-rm -rf "$ROOT"
 rm -f $UPDATER_CONF
