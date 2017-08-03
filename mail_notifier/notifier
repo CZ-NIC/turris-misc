@@ -151,24 +151,18 @@ compose_message() {
 			local msg_severity=`cat "$base_folder/$msg/severity"`
 
 			case "$msg_severity" in
-				"restart") echo -e "$(cat "$base_folder/$msg/message_$lang" || cat "$base_folder/$msg/message_$default_lang" || cat "$base_folder/$msg/message")\n" >> "$msg_file.restarts"
-					echo "$msg" >> "$locker_stamp/stamps.restarts"
+				restart|error|update)
+					msg_suffix="${msg_severity}s"
 					;;
-				"error") echo -e "$(cat "$base_folder/$msg/message_$lang" || cat "$base_folder/$msg/message_$default_lang" || cat "$base_folder/$msg/message")\n" >> "$msg_file.errors"
-					echo "$msg" >> "$locker_stamp/stamps.errors"
-					;;
-				"update") echo -e "$(cat "$base_folder/$msg/message_$lang" || cat "$base_folder/$msg/message_$default_lang" || cat "$base_folder/$msg/message")\n" >> "$msg_file.updates"
-					echo "$msg" >> "$locker_stamp/stamps.updates"
-					;;
-				"news") echo -e "$(cat "$base_folder/$msg/message_$lang" || cat "$base_folder/$msg/message_$default_lang" || cat "$base_folder/$msg/message")\n" >> "$msg_file.news"
-					echo "$msg" >> "$locker_stamp/stamps.news"
-					;;
-				"test") echo -e "$(cat "$base_folder/$msg/message_$lang" || cat "$base_folder/$msg/message_$default_lang" || cat "$base_folder/$msg/message")\n" >> "$msg_file.test"
-					echo "$msg" >> "$locker_stamp/stamps.test"
+				news|test)
+					msg_suffix="$msg_severity"
 					;;
 				*) echo "Unknown severity: $msg_severity"
 				;;
 			esac
+
+			echo -e "$(cat "$base_folder/$msg/message_$lang" || cat "$base_folder/$msg/message_$default_lang" || cat "$base_folder/$msg/message")\n" 2>/dev/null >> "$msg_file.$msg_suffix"
+			echo "$msg" >> "$locker_stamp/stamps.$msg_suffix"
 		fi
 	done
 
