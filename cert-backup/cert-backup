@@ -37,7 +37,7 @@ trap "umount -fl '$WORKDIR' || true; rmdir '$WORKDIR'" EXIT INT QUIT TERM ABRT
 
 test -z "$(ls -A "$WORKDIR")"
 if test -b "$PARTITION"; then
-	mount -t jffs2 "$PARTITION" "$WORKDIR"
+	mount -t jffs2 -o compr=none "$PARTITION" "$WORKDIR"
 else
 	if grep -q '/dev/mmcblk0p1 / btrfs' /proc/mounts && \
 	   ! btrfs subvol list / | grep -q "path $SUBVOL"; then
