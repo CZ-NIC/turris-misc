@@ -1,0 +1,10 @@
+#!modules/module.sh
+
+help="
+list detected hardware on usb and pci
+"
+
+run () {
+	lsusb -vvv
+	lspci -vvv
+}
