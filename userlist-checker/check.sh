@@ -22,8 +22,8 @@ UPDATER_TARGET_VERSION="$(updater_version "$BRANCH")"
 ## Prepare updater versions
 # 1045373e0977e42bf8ff23fda88d1d5dade690d5 - (v30) Version used in Turris Omnia factory (Turris OS 3.2)
 UPDATER_VERSIONS="1045373e0977e42bf8ff23fda88d1d5dade690d5"
-# v58.4.5 - used durring migration from old updater on Turris 1.x (Turris OS 3.7.2)
-UPDATER_VERSIONS="$UPDATER_VERSIONS v58.4.5"
+# v58.4.6 - used durring migration from old updater on Turris 1.x (Turris OS 3.7.3)
+UPDATER_VERSIONS="$UPDATER_VERSIONS v58.4.6"
 # Version in target branch
 UPDATER_VERSIONS="$UPDATER_VERSIONS v$UPDATER_TARGET_VERSION"
 # Version in deploy branch
