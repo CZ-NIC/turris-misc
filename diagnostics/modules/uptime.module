@@ -1,9 +1,0 @@
-#!modules/module.sh
-
-help="
-how long is the router running
-"
-
-run () {
-	uptime
-}
