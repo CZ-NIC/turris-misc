@@ -1,5 +1,0 @@
-MAILTO=""
-# m h    dom mon dow  user  command
-  5 */12  *   *   *   root  schnapps cleanup
-  5 1     *   *   0   root  schnapps create -t time "Snapshot created by cron"
-  5 2     *   *   0   root  schnapps cleanup --compare
