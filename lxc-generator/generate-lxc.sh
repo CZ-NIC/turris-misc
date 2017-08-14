@@ -82,15 +82,16 @@ add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/openwrt-mpc8
 add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
 get_arch
 add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
-add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Debian" "Stretch" "armv7l" "`get_lxc_url debian/stretch/armhf`"
+add_image "Debian" "Buster" "armv7l" "`get_lxc_url debian/buster/armhf`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
 add_image "openSUSE" "42.2" "armv7l" "http://download.opensuse.org/repositories/home:/-miska-:/arm:/image/openSUSE_Leap_42.2/openSUSE-Leap42.2-ARM-JeOS-rootfs.armv7l.tbz"
 add_image "openSUSE" "42.3" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/leap/42.3/appliances/openSUSE-Leap42.3-ARM-JeOS.armv7-rootfs.armv7l.tbz"
 add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
 add_image "Sabayon" "current" "armv7l" "`get_lxc_url sabayon/current/armhf`"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
-add_image "Ubuntu" "Yakkety" "armv7l" "`get_lxc_url ubuntu/yakkety/armhf`"
+add_image "Ubuntu" "Zesty" "armv7l" "`get_lxc_url ubuntu/zesty/armhf`"
+add_image "Ubuntu" "Artful" "armv7l" "`get_lxc_url ubuntu/artful/armhf`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
