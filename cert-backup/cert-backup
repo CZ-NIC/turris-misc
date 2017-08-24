@@ -33,7 +33,7 @@ SUBVOL=certbackup
 
 mkdir -p "$(dirname "$WORKDIR")"
 mkdir "$WORKDIR"
-trap "umount -fl '$WORKDIR' || true; rmdir '$WORKDIR'" EXIT INT QUIT TERM ABRT
+trap "umount -fl '$WORKDIR' || true; rmdir '$WORKDIR' || true" EXIT INT QUIT TERM ABRT
 
 test -z "$(ls -A "$WORKDIR")"
 if test -b "$PARTITION"; then
