@@ -2,12 +2,20 @@
 set -e
 
 BRANCH=
+VERIFY=false
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help)
 			echo "Script for easier branch switching."
 			echo "Usage: switch-branch [BRANCH]"
+			echo
+			echo "Options:"
+			echo "  --verify  Verify and fix branch settings"
+			echo "  --help    Print this help text"
 			exit 0
+			;;
+		--verify)
+			VERIFY=true
 			;;
 		*)
 			BRANCH="$1"
@@ -33,16 +41,26 @@ if ! which updater.sh >/dev/null 2>&1; then
 	exit 1
 fi
 
+# Return current branch
+get_branch() {
+	uci get updater.override.branch 2>/dev/null || echo "deploy"
+}
+
 # Checks if branch is supported
 check_branch() {
 	echo "$BRANCH" | grep -qE '^(deploy|rc|daily|nightly|test|master|stable|next|dev-.+)$'
 }
 
+# Get branch from uci in case of veryfication
+if $VERIFY; then
+	BRANCH="$(get_branch)"
+fi
+
 # Interactive selection of branch
 while [ -z "$BRANCH" ]; do
 	# Note: Not all branches are intentionally mentioned here as stable for example might be miss leading 
 cat <<EOF
-You are currently in: $(uci get updater.override.branch 2>/dev/null || echo "deploy")
+You are currently in: $(get_branch)
 
 You can choose from one of these branches:
   deploy
@@ -104,6 +122,12 @@ esac
 uci set updater.override=override
 [ "$BRANCH" = "deploy" ] && VBRANCH="" || VBRANCH="$BRANCH"
 uci set updater.override.branch="$VBRANCH"
+
+# If we are verifying configuration than the work is done.
+# We don't want to run updater nor printing info about branch.
+if $VERIFY; then
+	exit 0
+fi
 
 ## Run updater
 updater.sh || echo "Updater execution exited with error. Please see previous output to know what went wrong." >&2
