@@ -21,6 +21,16 @@ It is important to check the gpg -k *every time* the .git-gpg directory is
 updated (so an attacker couldn't sneak a key into the git repository and wait
 for it to be installed by accident).
 
+Refreshing gpg keys
+-------------------
+
+It is recommended to periodically refresh these gpg keys to check if some of
+them was not revoked or so.
+
+Suitable cron job is:
+
+  13 13 * * * user GNUPGHOME=$HOME/.git-gpg gpg --refresh-keys
+
 Unsigned detector
 -----------------
 
@@ -42,12 +52,6 @@ gen-gpg
 This is a maintainance script. It imports the keys and trust settings from
 files in this directory (trusted_keys.gpg and trust.txt) and creates the
 $HOME/.git-gpg.
-
-gpg-refresh
------------
-
-Refresh keys from a keyserver. This will import any revocations or possible new
-signatures on the keys. It is recommended to put into a cron script.
 
 Adding a new key
 ----------------
