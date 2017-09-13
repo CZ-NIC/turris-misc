@@ -122,6 +122,7 @@ esac
 uci set updater.override=override
 [ "$BRANCH" = "deploy" ] && VBRANCH="" || VBRANCH="$BRANCH"
 uci set updater.override.branch="$VBRANCH"
+uci commit updater.override.branch
 
 # If we are verifying configuration than the work is done.
 # We don't want to run updater nor printing info about branch.
