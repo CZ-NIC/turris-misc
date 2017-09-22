@@ -18,7 +18,7 @@
 #define FS_CMD "df"
 
 #define MAX_LEN_INTERFACE_NAME 20
-#define MAX_LEN_INTERFACE_LIST 20
+#define MAX_LEN_INTERFACE_LIST 80
 
 #define MAX_LEN_FS 20
 /*
@@ -159,6 +159,8 @@ static bool network_init_global() {
 		newlen = strlen(name) - 1;
 		name[newlen] = '\0';
 		memcpy(g_config.network.interfaces[g_config.network.interfaces_cnt++], name, newlen);
+		if(g_config.network.interfaces_cnt > MAX_LEN_INTERFACE_LIST)
+			break;
 	}
 
 	fclose(f);
