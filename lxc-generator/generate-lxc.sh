@@ -77,8 +77,8 @@ get_arch() {
     sed -i 's|/dev/sda1[[:blank:]]\([[:blank:]]*\)/boot\([[:blank:]]*\)vfat|#/dev/sda1\1/boot\2vfat|' ArchLinuxARM-mirabox-latest.tar
 }
 
-add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest-full.tar.gz
-add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz"
+add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest.tar.gz
+add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/medkit/medkit.tar.xz"
 add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
 get_arch
 add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
