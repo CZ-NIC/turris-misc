@@ -12,7 +12,7 @@ import os
 FLOWS_FILE = "/tmp/flows.json"
 CONFIG_FILE = "/tmp/rmbt.cfg"
 RMBT_BIN = "rmbt"
-DEBUG = True   # Debug printouts
+DEBUG = False   # Debug printouts
 
 
 class Settings:
