@@ -147,8 +147,8 @@ def measure_pings(sets):
 
     print('\033[93m'+"Starting ping test..."+'\033[0m')
     ping_result_lines = subprocess.check_output([
-        "ping", sets.test_server_address,
-        "-c", sets.test_numpings
+        "ping", "-c", sets.test_numpings,
+        sets.test_server_address
     ]).split('\n')
     ping_values = list()
     for i in range(1, int(sets.test_numpings)+1):
