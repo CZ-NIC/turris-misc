@@ -8,15 +8,17 @@ import locale
 import subprocess
 import shlex
 import os
+from random import randint
 
-FLOWS_FILE = "/tmp/flows.json"
-CONFIG_FILE = "/tmp/rmbt.cfg"
+
 RMBT_BIN = "rmbt"
 DEBUG = False   # Debug printouts
 
 
 class Settings:
     def __init__(self):
+        self.flows_file = "/tmp/flows-"+str(randint(0, 1000000000))+".json"
+        self.config_file = "/tmp/rmbtcfg-"+str(randint(0, 1000000000))+".cfg"
         self.language = locale.getdefaultlocale()[0]
         self.timezone = subprocess.check_output(["date", "+%Z"])[:-1]
         if os.path.isfile("/etc/turris-version"):
@@ -167,16 +169,16 @@ def measure_speed(sets):
     """Start RMBT client with saved arguments to measure the speed
     """
     # Create config file needed by rmbt-client
-    if os.path.isfile(CONFIG_FILE):
+    if os.path.isfile(sets.config_file):
         try:
-            os.remove(CONFIG_FILE)
+            os.remove(sets.config_file)
         except Exception, e:
             print(e)
             return ''
 
     try:
-        with open(CONFIG_FILE, "w") as config_file:
-            config_file.write('{"cnf_file_flows": "'+FLOWS_FILE+'.xz"}')
+        with open(sets.config_file, "w") as config_file:
+            config_file.write('{"cnf_file_flows": "'+sets.flows_file+'.xz"}')
     except Exception, e:
         print("Error creating config file")
         print(e)
@@ -188,19 +190,20 @@ def measure_speed(sets):
             RMBT_BIN, encryption.get(sets.test_server_encryption, ""), "-h",
             sets.test_server_address, "-p", str(sets.test_server_port), "-t",
             sets.test_token, "-f", sets.test_numthreads, "-d",
-            sets.test_duration, "-u", sets.test_duration, "-c", CONFIG_FILE])
+            sets.test_duration, "-u", sets.test_duration, "-c",
+            sets.config_file])
     if print_debug("Speed test result:"):
         print(test_result)
     return json.loads(test_result.split("}")[1] + "}")
 
 
-def import_speed_flows():
+def import_speed_flows(sets):
     """The speedtest flow is saved to a file during the test. This function
     imports it so it could be sent to the control server.
     """
-    if os.path.isfile(FLOWS_FILE):
+    if os.path.isfile(sets.flows_file):
         try:
-            os.remove(FLOWS_FILE)
+            os.remove(sets.flows_file)
         except Exception, e:
             print(e)
             return
@@ -210,8 +213,8 @@ def import_speed_flows():
         "ul": "upload"
     }
     try:
-        subprocess.call(shlex.split("unxz "+FLOWS_FILE+".xz"))
-        with open(FLOWS_FILE, 'r') as json_data:
+        subprocess.call(shlex.split("unxz "+sets.flows_file+".xz"))
+        with open(sets.flows_file, 'r') as json_data:
             flows_json = json.load(json_data)
     except Exception, e:
         print('Problem reading/decoding flows data.')
@@ -239,11 +242,11 @@ def import_speed_flows():
 
     # Remove generated files
     try:
-        os.remove(FLOWS_FILE)
+        os.remove(sets.flows_file)
     except Exception, e:
         print(e)
     try:
-        os.remove(CONFIG_FILE)
+        os.remove(sets.config_file)
     except Exception, e:
         print(e)
     return speed_array
@@ -304,14 +307,21 @@ def upload_result(sets, pres, test_result_json, speed_array):
 
 
 settings = Settings()
+# Request uuid from the control server
 request_uuid(settings)
+# Request test settings from the control server
 request_settings(settings)
 
+# Get the ping measurement result
 shortest_ping = measure_pings(settings)
+
+# Get the speed measurement result
 speed_result = measure_speed(settings)
 if speed_result == '':
     quit()
 
-speed_flows = import_speed_flows()
+# Get detailed test statistics
+speed_flows = import_speed_flows(settings)
 
+# Upload result to the control server
 upload_result(settings, shortest_ping, speed_result, speed_flows)
