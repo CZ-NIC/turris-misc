@@ -9,6 +9,7 @@ import subprocess
 import shlex
 import os
 from random import randint
+import argparse
 
 
 RMBT_BIN = "rmbt"
@@ -305,6 +306,16 @@ def upload_result(sets, pres, test_result_json, speed_array):
     if print_debug("Save result response:"):
         print(json.dumps(resp_json, indent=2))
 
+
+# Prepare argument parsing
+parser = argparse.ArgumentParser(description='NetMetr - client application for\
+    download and upload speed measurement.')
+parser.add_argument('--rwait', nargs=1, type=int, default=[0], help='delay for\
+    a random amount of time up to RWAIT seconds before the test strats')
+args = parser.parse_args()
+
+# Wait appropriate amount of time
+time.sleep(randint(0, args.rwait[0]))
 
 settings = Settings()
 # Request uuid from the control server
