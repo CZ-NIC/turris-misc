@@ -10,6 +10,7 @@ import shlex
 import os
 from random import randint
 import argparse
+import datetime
 
 
 RMBT_BIN = "rmbt"
@@ -312,7 +313,22 @@ parser = argparse.ArgumentParser(description='NetMetr - client application for\
     download and upload speed measurement.')
 parser.add_argument('--rwait', nargs=1, type=int, default=[0], help='delay for\
     a random amount of time up to RWAIT seconds before the test strats')
+parser.add_argument('--autostart', action='store_true', help='use this\
+    option oly when running as automated service - to check whether it is\
+    right time to run the test')
 args = parser.parse_args()
+
+# When autostarted - check whether it is right time to run the test
+# In uci config, we expect hours of a day separated by commas (,) - these hours
+# are the time the test should be run. So whenever the script is started, it
+# looks to it's config and if it finds the current hour of day in it,
+# it will start the test
+if (args.autostart and os.path.isfile("/sbin/uci")):
+    hours = subprocess.check_output([
+        "uci", "get", "netmetr.@settings[0].hours_to_run"])[:-1].split(',')
+    hours = map(int, hours)
+    if (datetime.datetime.now().hour not in hours):
+        exit()
 
 # Wait appropriate amount of time
 time.sleep(randint(0, args.rwait[0]))
