@@ -16,6 +16,7 @@ import re
 
 RMBT_BIN = "rmbt"
 HIST_FILE_PRE = "netmetr-history"
+FALLBACK_CTRL_SRV = "netmetr-control.labs.nic.cz"
 
 
 class Settings:
@@ -24,6 +25,32 @@ class Settings:
         self.config_file = "/tmp/rmbtcfg-"+str(randint(0, 1000000000))+".cfg"
         self.language = locale.getdefaultlocale()[0]
         self.timezone = subprocess.check_output(["date", "+%Z"])[:-1]
+        if os.path.isfile("/sbin/uci"):
+            process = subprocess.Popen(
+                ["uci", "get", "netmetr.@settings[0].control_server"],
+                stdout=subprocess.PIPE
+            )
+            if process.wait() == 0:
+                self.control_server = process.stdout.read()[:-1]
+            else:
+                print(
+                    'control server not found, falling to: ' +
+                    FALLBACK_CTRL_SRV + '.'
+                )
+                self.control_server = FALLBACK_CTRL_SRV
+                subprocess.call([
+                    "uci",
+                    "set",
+                    "netmetr.@settings[0].control_server="
+                    + self.control_server
+                ])
+                subprocess.call(["uci", "commit"])
+        else:
+            print(
+                'control server not found, falling to: ' + FALLBACK_CTRL_SRV
+                + '.'
+            )
+            self.control_server = FALLBACK_CTRL_SRV
         if os.path.isfile("/etc/turris-version"):
             with open("/etc/turris-version", 'r') as turris_version:
                 self.os_version = turris_version.read().split('\n')[0]
@@ -78,7 +105,7 @@ def request_uuid(sets):
 
     # Creating GET request to obtain / check uuid
     req = urllib2.Request(
-            'https://netmetr-control.labs.nic.cz/RMBTControlServer/settings'
+            'https://' + sets.control_server + '/RMBTControlServer/settings'
     )
     req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
     req.add_header('Content-Type', 'application/json')
@@ -108,7 +135,7 @@ def request_settings(sets):
     """
     # Create request to start a test
     req = urllib2.Request(
-            'https://netmetr-control.labs.nic.cz/RMBTControlServer/testRequest'
+            'https://' + sets.control_server + '/RMBTControlServer/testRequest'
     )
     # Add headers
     req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
@@ -297,7 +324,7 @@ def upload_result(sets, pres, test_result_json, speed_array):
 
     # Create GET request
     req = urllib2.Request(
-            'https://netmetr-control.labs.nic.cz/RMBTControlServer/result'
+            'https://' + sets.control_server + '/RMBTControlServer/result'
     )
     # Add headers
     req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
@@ -332,7 +359,7 @@ def download_history(sets):
     }
     # Creating POST request to get history
     req = urllib2.Request(
-            'https://netmetr-control.labs.nic.cz/RMBTControlServer/history'
+            'https://' + sets.control_server + '/RMBTControlServer/history'
     )
     req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
     req.add_header('Content-Type', 'application/json')
