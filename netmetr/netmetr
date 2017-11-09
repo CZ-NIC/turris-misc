@@ -15,7 +15,6 @@ import re
 
 
 RMBT_BIN = "rmbt"
-DEBUG = False   # Debug printouts
 HIST_FILE_PRE = "netmetr-history"
 
 
@@ -372,7 +371,11 @@ parser.add_argument(
     help='download measurement history from control server and save it to \
         /tmp/' + HIST_FILE_PRE + '_<timestamp>.json'
 )
+parser.add_argument('--debug', action='store_true', help='enables debug \
+        printouts')
 args = parser.parse_args()
+
+DEBUG = args.debug
 
 # When autostarted - check whether it is right time to run the test
 # In uci config, we expect hours of a day separated by commas (,) - these hours
