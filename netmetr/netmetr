@@ -11,10 +11,12 @@ import os
 from random import randint
 import argparse
 import datetime
+import re
 
 
 RMBT_BIN = "rmbt"
 DEBUG = False   # Debug printouts
+HIST_FILE_PRE = "netmetr-history"
 
 
 class Settings:
@@ -308,6 +310,54 @@ def upload_result(sets, pres, test_result_json, speed_array):
         print(json.dumps(resp_json, indent=2))
 
 
+def purge(dir, pattern):
+    """Lists a directory and removes every file matching the pattern
+    """
+    for f in os.listdir(dir):
+        if re.search(pattern, f):
+            try:
+                os.remove(os.path.join(dir, f))
+            except OSError:
+                pass
+
+
+def download_history(sets):
+    """Creates a http request and ask the control server for a measurement
+    history.
+    """
+    # Create json to request history
+    req_json = {
+        "language": sets.language,
+        "timezone": sets.timezone,
+        "uuid": sets.uuid,
+    }
+    # Creating POST request to get history
+    req = urllib2.Request(
+            'https://netmetr-control.labs.nic.cz/RMBTControlServer/history'
+    )
+    req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
+    req.add_header('Content-Type', 'application/json')
+
+    if print_debug("Downloading measurement history from the control server."):
+        print(json.dumps(req_json, indent=2))
+    # Send the request
+    resp = urllib2.urlopen(req, json.dumps(req_json))
+    resp_json = json.loads(resp.read())
+    # Remove all the previously saved measurements
+    purge("/tmp", HIST_FILE_PRE)
+    if print_debug("Measurement history response:"):
+        print(json.dumps(resp_json, indent=2))
+    try:
+        with open(
+            "/tmp/" + HIST_FILE_PRE + "_" + sets.get_time() + ".json",
+            "w"
+        ) as hist_file:
+                hist_file.write(json.dumps(resp_json, indent=2))
+    except Exception, e:
+        print("Error saving file")
+        print(e)
+
+
 # Prepare argument parsing
 parser = argparse.ArgumentParser(description='NetMetr - client application for\
     download and upload speed measurement.')
@@ -316,6 +366,12 @@ parser.add_argument('--rwait', nargs=1, type=int, default=[0], help='delay for\
 parser.add_argument('--autostart', action='store_true', help='use this\
     option oly when running as automated service - to check whether it is\
     right time to run the test')
+parser.add_argument(
+    '--dwlhist',
+    action='store_true',
+    help='download measurement history from control server and save it to \
+        /tmp/' + HIST_FILE_PRE + '_<timestamp>.json'
+)
 args = parser.parse_args()
 
 # When autostarted - check whether it is right time to run the test
@@ -352,3 +408,7 @@ speed_flows = import_speed_flows(settings)
 
 # Upload result to the control server
 upload_result(settings, shortest_ping, speed_result, speed_flows)
+
+# Optionally download measurement history from the control server
+if (args.dwlhist):
+    download_history(settings)
