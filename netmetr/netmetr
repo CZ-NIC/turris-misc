@@ -473,16 +473,33 @@ args = parser.parse_args()
 
 DEBUG = args.debug
 
-# When autostarted - check whether it is right time to run the test
+# When autostarted - check whether autostart is enabled and
+# if it is right time to run the test.
 # In uci config, we expect hours of a day separated by commas (,) - these hours
 # are the time the test should be run. So whenever the script is started, it
 # looks to it's config and if it finds the current hour of day in it,
 # it will start the test
 if (args.autostart and os.path.isfile("/sbin/uci")):
-    hours = subprocess.check_output([
-        "uci", "get", "netmetr.@settings[0].hours_to_run"])[:-1].split(',')
-    hours = map(int, hours)
-    if (datetime.datetime.now().hour not in hours):
+    process = subprocess.Popen(
+        ["uci", "-q", "get", "netmetr.@settings[0].autostart_enabled"],
+        stdout=subprocess.PIPE
+    )
+    if (process.wait() == 0):
+        autostart_enabled = process.stdout.read()[:-1]
+    else:
+        print("Failed to load autostart uci settings.")
+        exit()
+    process = subprocess.Popen(
+        ["uci", "-q", "get", "netmetr.@settings[0].hours_to_run"],
+        stdout=subprocess.PIPE
+    )
+    if (process.wait() == 0):
+        hours = process.stdout.read()[:-1].split(',')
+        hours = map(int, hours)
+    else:
+        print("Failed to load autostart time uci settings.")
+        exit()
+    if (autostart_enabled != '1' or datetime.datetime.now().hour not in hours):
         exit()
 
 # Wait appropriate amount of time
