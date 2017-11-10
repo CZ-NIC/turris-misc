@@ -27,14 +27,14 @@ class Settings:
         self.timezone = subprocess.check_output(["date", "+%Z"])[:-1]
         if os.path.isfile("/sbin/uci"):
             process = subprocess.Popen(
-                ["uci", "get", "netmetr.@settings[0].control_server"],
+                ["uci", "-q", "get", "netmetr.@settings[0].control_server"],
                 stdout=subprocess.PIPE
             )
             if process.wait() == 0:
                 self.control_server = process.stdout.read()[:-1]
             else:
-                print(
-                    'control server not found, falling to: ' +
+                print_info(
+                    'Control server not found, falling to: ' +
                     FALLBACK_CTRL_SRV + '.'
                 )
                 self.control_server = FALLBACK_CTRL_SRV
@@ -46,9 +46,9 @@ class Settings:
                 ])
                 subprocess.call(["uci", "commit"])
         else:
-            print(
-                'control server not found, falling to: ' + FALLBACK_CTRL_SRV
-                + '.'
+            print_info(
+                'Control server not found (uci missing), falling to: '
+                + FALLBACK_CTRL_SRV + '.'
             )
             self.control_server = FALLBACK_CTRL_SRV
         if os.path.isfile("/etc/turris-version"):
@@ -73,6 +73,8 @@ def print_debug(msg):
         print('\033[93m' + msg + '\033[0m')
     return DEBUG
 
+def print_info(msg):
+    print('\033[91m' + msg + '\033[0m')
 
 def request_uuid(sets):
     """Creates a http request and ask the control server for correct uuid"""
@@ -91,16 +93,16 @@ def request_uuid(sets):
     # Load uuid saved in config file via uci
     if os.path.isfile("/sbin/uci"):
         process = subprocess.Popen(
-                ["uci", "get", "netmetr.@settings[0].uuid"],
+                ["uci", "-q", "get", "netmetr.@settings[0].uuid"],
                 stdout=subprocess.PIPE
         )
         if process.wait() == 0:
             req_json['uuid'] = process.stdout.read()[:-1]
         else:
-            print('uuid not found, requesting new one.')
+            print_info('Uuid not found, requesting new one.')
             req_json['uuid'] = 0
     else:
-        print('uuid not found, requesting new one.')
+        print_info('Uuid not found (uci missing), requesting new one.')
         req_json['uuid'] = 0
 
     # Creating GET request to obtain / check uuid
@@ -118,9 +120,13 @@ def request_uuid(sets):
     if uuid_new:  # New uuid was received
         sets.uuid = uuid_new
         if os.path.isfile("/sbin/uci"):
-            process = subprocess.Popen([
+            subprocess.call([
                 "uci", "set",
                 "netmetr.@settings[0].uuid="+sets.uuid
+            ])
+            subprocess.call([
+                "uci", "-q", "delete",
+                "netmetr.@settings[0].sync_code"
             ])
             subprocess.call(["uci", "commit"])
     else:
@@ -384,6 +390,69 @@ def download_history(sets):
         print(e)
 
 
+def download_sync_code(sets):
+    """Creates a http request and ask the control server for a synchronization
+    code that can be used to view saved measurements from different devices.
+    The new code is saved via uci.
+    """
+    # Create json to request synchronization code
+    req_json = {
+        "language": sets.language,
+        "timezone": sets.timezone,
+        "uuid": sets.uuid,
+    }
+    # Creating POST request to get the sync code
+    req = urllib2.Request(
+            'https://' + sets.control_server + '/RMBTControlServer/sync'
+    )
+    req.add_header('Accept', 'application/json, text/javascript, */*; q=0.01')
+    req.add_header('Content-Type', 'application/json')
+
+    if print_debug(
+        "Downloading synchronization code from the control server."
+    ):
+        print(json.dumps(req_json, indent=2))
+    # Send the request
+    resp = urllib2.urlopen(req, json.dumps(req_json))
+    resp_json = json.loads(resp.read())
+    if print_debug("Synchronization token response:"):
+        print(json.dumps(resp_json, indent=2))
+
+    if not resp_json["error"]:
+        sets.sync_code = resp_json["sync"][0].get("sync_code", '')
+        # If we have uci and VALID sync code:
+        if (os.path.isfile("/sbin/uci") and sets.sync_code):
+            subprocess.call([
+                "uci", "set",
+                "netmetr.@settings[0].sync_code="+sets.sync_code
+            ])
+            subprocess.call(["uci", "commit"])
+    else:
+        sets.sync_code = ''
+        print("Error downloading synchronization code.")
+
+
+def load_sync_code(sets):
+    """Checks the uci config for sychronization code and loads it to the\
+    script. If no synchronization code is found a https request is send to\
+    download it.
+    """
+    # Load synchronization code saved in config file via uci
+    if os.path.isfile("/sbin/uci"):
+        process = subprocess.Popen(
+                ["uci", "-q", "get", "netmetr.@settings[0].sync_code"],
+                stdout=subprocess.PIPE
+        )
+        if process.wait() == 0:
+            sets.sync_code = process.stdout.read()[:-1]
+        else:
+            print_info('Sync code not found, requesting new one.')
+            download_sync_code(sets)
+    else:
+        print_info('Sync code not found (uci missing), requesting new one.')
+        download_sync_code(sets)
+
+
 # Prepare argument parsing
 parser = argparse.ArgumentParser(description='NetMetr - client application for\
     download and upload speed measurement.')
@@ -442,3 +511,7 @@ upload_result(settings, shortest_ping, speed_result, speed_flows)
 # Optionally download measurement history from the control server
 if (args.dwlhist):
     download_history(settings)
+
+load_sync_code(settings)
+if (settings.sync_code):
+    print_info("Your Sync code is: " + settings.sync_code)
