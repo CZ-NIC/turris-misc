@@ -12,6 +12,7 @@ from random import randint
 import argparse
 import datetime
 import re
+import tempfile
 
 
 RMBT_BIN = "rmbt"
@@ -21,8 +22,8 @@ FALLBACK_CTRL_SRV = "netmetr-control.labs.nic.cz"
 
 class Settings:
     def __init__(self):
-        self.flows_file = "/tmp/flows-"+str(randint(0, 1000000000))+".json"
-        self.config_file = "/tmp/rmbtcfg-"+str(randint(0, 1000000000))+".cfg"
+        _, self.flows_file = tempfile.mkstemp()
+        _, self.config_file = tempfile.mkstemp()
         self.language = locale.getdefaultlocale()[0]
         self.timezone = subprocess.check_output(["date", "+%Z"])[:-1]
         if os.path.isfile("/sbin/uci"):
@@ -35,7 +36,7 @@ class Settings:
             else:
                 print_info(
                     'Control server not found, falling to: ' +
-                    FALLBACK_CTRL_SRV + '.'
+                    FALLBACK_CTRL_SRV
                 )
                 self.control_server = FALLBACK_CTRL_SRV
                 subprocess.call([
@@ -48,7 +49,7 @@ class Settings:
         else:
             print_info(
                 'Control server not found (uci missing), falling to: '
-                + FALLBACK_CTRL_SRV + '.'
+                + FALLBACK_CTRL_SRV
             )
             self.control_server = FALLBACK_CTRL_SRV
         if os.path.isfile("/etc/turris-version"):
@@ -70,15 +71,27 @@ class Settings:
 
 def print_debug(msg):
     if DEBUG:
-        print('\033[93m' + msg + '\033[0m')
+        if COLORED_OUTPUT:
+            print('\033[93m' + msg + '\033[0m')
+        else:
+            print(msg)
     return DEBUG
 
 def print_info(msg):
-    print('\033[91m' + msg + '\033[0m')
+    if COLORED_OUTPUT:
+        print('\033[91m' + msg + '\033[0m')
+    else:
+        print(msg)
+
+def print_progress(msg):
+    if COLORED_OUTPUT:
+        print('\033[93m' + msg + '\033[0m')
+    else:
+        print(msg)
 
 def request_uuid(sets):
     """Creates a http request and ask the control server for correct uuid"""
-    print('\033[93m'+"Requesting test config from control server..."+'\033[0m')
+    print_progress("Requesting test config from control server...")
     # Create json to request uuid
     req_json = {
         "language": sets.language,
@@ -183,7 +196,7 @@ def measure_pings(sets):
      the lowest one
     """
 
-    print('\033[93m'+"Starting ping test..."+'\033[0m')
+    print_progress("Starting ping test...")
     ping_result_lines = subprocess.check_output([
         "ping", "-c", sets.test_numpings,
         sets.test_server_address
@@ -221,7 +234,7 @@ def measure_speed(sets):
         return ''
 
     encryption = {True: "-e"}
-    print('\033[93m'+"Starting speed test..."+'\033[0m')
+    print_progress("Starting speed test...")
     test_result = subprocess.check_output([
             RMBT_BIN, encryption.get(sets.test_server_encryption, ""), "-h",
             sets.test_server_address, "-p", str(sets.test_server_port), "-t",
@@ -386,7 +399,7 @@ def download_history(sets):
         ) as hist_file:
                 hist_file.write(json.dumps(resp_json, indent=2))
     except Exception, e:
-        print("Error saving file")
+        print("Error saving measurement history.")
         print(e)
 
 
@@ -457,21 +470,24 @@ def load_sync_code(sets):
 parser = argparse.ArgumentParser(description='NetMetr - client application for\
     download and upload speed measurement.')
 parser.add_argument('--rwait', nargs=1, type=int, default=[0], help='delay for\
-    a random amount of time up to RWAIT seconds before the test strats')
+    a random amount of time up to RWAIT seconds before the test starts')
 parser.add_argument('--autostart', action='store_true', help='use this\
-    option oly when running as automated service - to check whether it is\
+    option only when running as an automated service - to check whether it is\
     right time to run the test')
 parser.add_argument(
     '--dwlhist',
     action='store_true',
-    help='download measurement history from control server and save it to \
+    help='download measurement history from the control server and save it to \
         /tmp/' + HIST_FILE_PRE + '_<timestamp>.json'
 )
 parser.add_argument('--debug', action='store_true', help='enables debug \
         printouts')
+parser.add_argument('--no-color', action='store_true', help='disables colored \
+        text output')
 args = parser.parse_args()
 
 DEBUG = args.debug
+COLORED_OUTPUT = not args.no_color
 
 # When autostarted - check whether autostart is enabled and
 # if it is right time to run the test.
