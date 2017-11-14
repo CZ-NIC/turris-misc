@@ -22,8 +22,9 @@ FALLBACK_CTRL_SRV = "netmetr-control.labs.nic.cz"
 
 class Settings:
     def __init__(self):
-        _, self.flows_file = tempfile.mkstemp()
-        _, self.config_file = tempfile.mkstemp()
+        if (not args.no_run):
+            _, self.flows_file = tempfile.mkstemp()
+            _, self.config_file = tempfile.mkstemp()
         self.language = locale.getdefaultlocale()[0]
         self.timezone = subprocess.check_output(["date", "+%Z"])[:-1]
         if os.path.isfile("/sbin/uci"):
@@ -77,11 +78,13 @@ def print_debug(msg):
             print(msg)
     return DEBUG
 
+
 def print_info(msg):
     if COLORED_OUTPUT:
         print('\033[91m' + msg + '\033[0m')
     else:
         print(msg)
+
 
 def print_progress(msg):
     if COLORED_OUTPUT:
@@ -89,11 +92,45 @@ def print_progress(msg):
     else:
         print(msg)
 
-def request_uuid(sets):
+def print_error(msq, error_code):
+    if COLORED_OUTPUT:
+        print('\033[41m' + msg + '\033[0m')
+    else:
+        print(msg)
+    exit(error_code)
+
+
+def load_uuid(sets):
+    """Checks the uci config for uuid and loads it to the
+    script. If no uuid is found a https request is send to the control server
+    to download it.
+    """
+    # Load uuid saved in config file via uci
+    if os.path.isfile("/sbin/uci"):
+        process = subprocess.Popen(
+                ["uci", "-q", "get", "netmetr.@settings[0].uuid"],
+                stdout=subprocess.PIPE
+        )
+        if process.wait() == 0:
+            sets.uuid = process.stdout.read()[:-1]
+        else:
+            print_info('Uuid not found, requesting new one.')
+            sets.uuid = 0;
+    else:
+        print_info('Uuid not found (uci missing), requesting new one.')
+        sets.uuid = 0;
+
+    # the download request must be sent all the time - either to raquest new
+    # uuid or to check the existing one
+    download_uuid(sets)
+
+
+def download_uuid(sets):
     """Creates a http request and ask the control server for correct uuid"""
-    print_progress("Requesting test config from control server...")
+    print_progress("Checking uuid on the control server...")
     # Create json to request uuid
     req_json = {
+        "uuid": sets.uuid,
         "language": sets.language,
         "timezone": sets.timezone,
         "name": "RMBT",
@@ -102,21 +139,6 @@ def request_uuid(sets):
         "version_code": "1",
         "version_name": "1.0",
     }
-
-    # Load uuid saved in config file via uci
-    if os.path.isfile("/sbin/uci"):
-        process = subprocess.Popen(
-                ["uci", "-q", "get", "netmetr.@settings[0].uuid"],
-                stdout=subprocess.PIPE
-        )
-        if process.wait() == 0:
-            req_json['uuid'] = process.stdout.read()[:-1]
-        else:
-            print_info('Uuid not found, requesting new one.')
-            req_json['uuid'] = 0
-    else:
-        print_info('Uuid not found (uci missing), requesting new one.')
-        req_json['uuid'] = 0
 
     # Creating GET request to obtain / check uuid
     req = urllib2.Request(
@@ -152,6 +174,7 @@ def request_settings(sets):
     """Creates a http request to get test token, number of threads, number
     of pings, server address and port and so on.
     """
+    print_progress("Requesting test config from the control server...")
     # Create request to start a test
     req = urllib2.Request(
             'https://' + sets.control_server + '/RMBTControlServer/testRequest'
@@ -484,6 +507,9 @@ parser.add_argument('--debug', action='store_true', help='enables debug \
         printouts')
 parser.add_argument('--no-color', action='store_true', help='disables colored \
         text output')
+parser.add_argument('--no-run', action='store_true', help='this option\
+    prevents from running the test. It could be used only to obtain sync code\
+    or (with --dwlhist) to download measurement history')
 args = parser.parse_args()
 
 DEBUG = args.debug
@@ -523,23 +549,25 @@ time.sleep(randint(0, args.rwait[0]))
 
 settings = Settings()
 # Request uuid from the control server
-request_uuid(settings)
-# Request test settings from the control server
-request_settings(settings)
+load_uuid(settings)
 
-# Get the ping measurement result
-shortest_ping = measure_pings(settings)
+if (not args.no_run):
+    # Request test settings from the control server
+    request_settings(settings)
 
-# Get the speed measurement result
-speed_result = measure_speed(settings)
-if speed_result == '':
-    quit()
+    # Get the ping measurement result
+    shortest_ping = measure_pings(settings)
 
-# Get detailed test statistics
-speed_flows = import_speed_flows(settings)
+    # Get the speed measurement result
+    speed_result = measure_speed(settings)
+    if speed_result == '':
+        quit()
 
-# Upload result to the control server
-upload_result(settings, shortest_ping, speed_result, speed_flows)
+    # Get detailed test statistics
+    speed_flows = import_speed_flows(settings)
+
+    # Upload result to the control server
+    upload_result(settings, shortest_ping, speed_result, speed_flows)
 
 # Optionally download measurement history from the control server
 if (args.dwlhist):
