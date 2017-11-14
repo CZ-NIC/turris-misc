@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # coding: utf-8
 import urllib2
 import json
@@ -16,20 +16,18 @@ import tempfile
 
 
 RMBT_BIN = "rmbt"
-HIST_FILE_PRE = "netmetr-history"
-FALLBACK_CTRL_SRV = "netmetr-control.labs.nic.cz"
+HIST_FILE = "/tmp/netmetr-history.json"
+# FALLBACK_CTRL_SRV = "netmetr-control.labs.nic.cz"
+FALLBACK_CTRL_SRV = "control.netmetr.cz"
 
 
 class Settings:
     def __init__(self):
-        if (not args.no_run):
-            _, self.flows_file = tempfile.mkstemp()
-            _, self.config_file = tempfile.mkstemp()
         self.language = locale.getdefaultlocale()[0]
         self.timezone = subprocess.check_output(["date", "+%Z"])[:-1]
         if os.path.isfile("/sbin/uci"):
             process = subprocess.Popen(
-                ["uci", "-q", "get", "netmetr.@settings[0].control_server"],
+                ["uci", "-q", "get", "netmetr.settings.control_server"],
                 stdout=subprocess.PIPE
             )
             if process.wait() == 0:
@@ -43,7 +41,7 @@ class Settings:
                 subprocess.call([
                     "uci",
                     "set",
-                    "netmetr.@settings[0].control_server="
+                    "netmetr.settings.control_server="
                     + self.control_server
                 ])
                 subprocess.call(["uci", "commit"])
@@ -92,7 +90,8 @@ def print_progress(msg):
     else:
         print(msg)
 
-def print_error(msq, error_code):
+
+def print_error(msg, error_code):
     if COLORED_OUTPUT:
         print('\033[41m' + msg + '\033[0m')
     else:
@@ -108,17 +107,17 @@ def load_uuid(sets):
     # Load uuid saved in config file via uci
     if os.path.isfile("/sbin/uci"):
         process = subprocess.Popen(
-                ["uci", "-q", "get", "netmetr.@settings[0].uuid"],
+                ["uci", "-q", "get", "netmetr.settings.uuid"],
                 stdout=subprocess.PIPE
         )
         if process.wait() == 0:
             sets.uuid = process.stdout.read()[:-1]
         else:
             print_info('Uuid not found, requesting new one.')
-            sets.uuid = 0;
+            sets.uuid = 0
     else:
         print_info('Uuid not found (uci missing), requesting new one.')
-        sets.uuid = 0;
+        sets.uuid = 0
 
     # the download request must be sent all the time - either to raquest new
     # uuid or to check the existing one
@@ -157,11 +156,11 @@ def download_uuid(sets):
         if os.path.isfile("/sbin/uci"):
             subprocess.call([
                 "uci", "set",
-                "netmetr.@settings[0].uuid="+sets.uuid
+                "netmetr.settings.uuid="+sets.uuid
             ])
             subprocess.call([
                 "uci", "-q", "delete",
-                "netmetr.@settings[0].sync_code"
+                "netmetr.settings.sync_code"
             ])
             subprocess.call(["uci", "commit"])
     else:
@@ -220,34 +219,37 @@ def measure_pings(sets):
     """
 
     print_progress("Starting ping test...")
-    ping_result_lines = subprocess.check_output([
-        "ping", "-c", sets.test_numpings,
-        sets.test_server_address
-    ]).split('\n')
     ping_values = list()
     for i in range(1, int(sets.test_numpings)+1):
-        try:
-            start = ping_result_lines[i].index("time=") + len("time=")
-            end = ping_result_lines[i].index(" ms")
-            ping = int(float(ping_result_lines[i][start:end])*1000000)
-            ping_values.append(ping)
-        except:
-            print("Problem decoding pings.")
-            return ''
-    return min(int(s) for s in ping_values)
+        process = subprocess.Popen([
+            "ping", "-c1",
+            sets.test_server_address
+        ], stdout=subprocess.PIPE)
+        if (process.wait() == 0):
+            try:
+                ping_result = process.stdout.read()
+                start = ping_result.index("time=") + len("time=")
+                end = ping_result.index(" ms")
+                ping = float(ping_result[start:end])
+                print("ping_"+str(i)+"_msec = "+format(ping, '.2f'))
+                ping = int(ping * 1000000)
+                ping_values.append(ping)
+            except:
+                print("Problem decoding pings.")
+                return ''
+            time.sleep(0.5)
+    try:
+        return min(int(s) for s in ping_values)
+    except:
+        return ''
 
 
 def measure_speed(sets):
     """Start RMBT client with saved arguments to measure the speed
     """
     # Create config file needed by rmbt-client
-    if os.path.isfile(sets.config_file):
-        try:
-            os.remove(sets.config_file)
-        except Exception, e:
-            print(e)
-            return ''
-
+    _, sets.config_file = tempfile.mkstemp()
+    _, sets.flows_file = tempfile.mkstemp()
     try:
         with open(sets.config_file, "w") as config_file:
             config_file.write('{"cnf_file_flows": "'+sets.flows_file+'.xz"}')
@@ -273,19 +275,12 @@ def import_speed_flows(sets):
     """The speedtest flow is saved to a file during the test. This function
     imports it so it could be sent to the control server.
     """
-    if os.path.isfile(sets.flows_file):
-        try:
-            os.remove(sets.flows_file)
-        except Exception, e:
-            print(e)
-            return
-
     directions = {
         "dl": "download",
         "ul": "upload"
     }
     try:
-        subprocess.call(shlex.split("unxz "+sets.flows_file+".xz"))
+        subprocess.call(shlex.split("unxz -f "+sets.flows_file+".xz"))
         with open(sets.flows_file, 'r') as json_data:
             flows_json = json.load(json_data)
     except Exception, e:
@@ -411,16 +406,13 @@ def download_history(sets):
     # Send the request
     resp = urllib2.urlopen(req, json.dumps(req_json))
     resp_json = json.loads(resp.read())
-    # Remove all the previously saved measurements
-    purge("/tmp", HIST_FILE_PRE)
     if print_debug("Measurement history response:"):
         print(json.dumps(resp_json, indent=2))
+    _, sets.hist_file = tempfile.mkstemp()
     try:
-        with open(
-            "/tmp/" + HIST_FILE_PRE + "_" + sets.get_time() + ".json",
-            "w"
-        ) as hist_file:
+        with open(sets.hist_file, "w") as hist_file:
                 hist_file.write(json.dumps(resp_json, indent=2))
+        os.rename(sets.hist_file, HIST_FILE)
     except Exception, e:
         print("Error saving measurement history.")
         print(e)
@@ -460,7 +452,7 @@ def download_sync_code(sets):
         if (os.path.isfile("/sbin/uci") and sets.sync_code):
             subprocess.call([
                 "uci", "set",
-                "netmetr.@settings[0].sync_code="+sets.sync_code
+                "netmetr.settings.sync_code="+sets.sync_code
             ])
             subprocess.call(["uci", "commit"])
     else:
@@ -476,7 +468,7 @@ def load_sync_code(sets):
     # Load synchronization code saved in config file via uci
     if os.path.isfile("/sbin/uci"):
         process = subprocess.Popen(
-                ["uci", "-q", "get", "netmetr.@settings[0].sync_code"],
+                ["uci", "-q", "get", "netmetr.settings.sync_code"],
                 stdout=subprocess.PIPE
         )
         if process.wait() == 0:
@@ -501,7 +493,7 @@ parser.add_argument(
     '--dwlhist',
     action='store_true',
     help='download measurement history from the control server and save it to \
-        /tmp/' + HIST_FILE_PRE + '_<timestamp>.json'
+        /tmp/' + HIST_FILE
 )
 parser.add_argument('--debug', action='store_true', help='enables debug \
         printouts')
@@ -523,7 +515,7 @@ COLORED_OUTPUT = not args.no_color
 # it will start the test
 if (args.autostart and os.path.isfile("/sbin/uci")):
     process = subprocess.Popen(
-        ["uci", "-q", "get", "netmetr.@settings[0].autostart_enabled"],
+        ["uci", "-q", "get", "netmetr.settings.autostart_enabled"],
         stdout=subprocess.PIPE
     )
     if (process.wait() == 0):
@@ -532,11 +524,11 @@ if (args.autostart and os.path.isfile("/sbin/uci")):
         print("Failed to load autostart uci settings.")
         exit()
     process = subprocess.Popen(
-        ["uci", "-q", "get", "netmetr.@settings[0].hours_to_run"],
+        ["uci", "-q", "get", "netmetr.settings.hours_to_run"],
         stdout=subprocess.PIPE
     )
     if (process.wait() == 0):
-        hours = process.stdout.read()[:-1].split(',')
+        hours = process.stdout.read()[:-1].split(' ')
         hours = map(int, hours)
     else:
         print("Failed to load autostart time uci settings.")
