@@ -492,8 +492,8 @@ parser.add_argument('--autostart', action='store_true', help='use this\
 parser.add_argument(
     '--dwlhist',
     action='store_true',
-    help='download measurement history from the control server and save it to \
-        /tmp/' + HIST_FILE
+    help='download measurement history from the control server and save it to'
+    + HIST_FILE
 )
 parser.add_argument('--debug', action='store_true', help='enables debug \
         printouts')
