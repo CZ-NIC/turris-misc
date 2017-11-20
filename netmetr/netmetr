@@ -19,6 +19,7 @@ RMBT_BIN = "rmbt"
 HIST_FILE = "/tmp/netmetr-history.json"
 # FALLBACK_CTRL_SRV = "netmetr-control.labs.nic.cz"
 FALLBACK_CTRL_SRV = "control.netmetr.cz"
+FALLBACK_MAX_HISTORY_LOGS = 10
 
 
 class Settings:
@@ -388,10 +389,43 @@ def download_history(sets):
     """Creates a http request and ask the control server for a measurement
     history.
     """
+
+    def save_max_hist_logs():
+        max_history_logs = FALLBACK_MAX_HISTORY_LOGS
+        if os.path.isfile("/sbin/uci"):
+            subprocess.call([
+                "uci", "set",
+                "netmetr.settings.max_history_logs="+str(max_history_logs)
+            ])
+            subprocess.call(["uci", "commit"])
+        return max_history_logs
+
+    # Load number of max hostory logs thaht can be downloaded - via uci
+    if os.path.isfile("/sbin/uci"):
+        process = subprocess.Popen(
+                ["uci", "-q", "get", "netmetr.settings.max_history_logs"],
+                stdout=subprocess.PIPE
+        )
+        if process.wait() == 0:
+            max_history_logs = process.stdout.read()[:-1]
+        else:
+            print_info(
+                'Max history logs not found, falling to ' +
+                str(FALLBACK_MAX_HISTORY_LOGS)
+            )
+            max_history_logs = save_max_hist_logs()
+    else:
+        print_info(
+            'Max history logs not found (uci missing), falling to ' +
+            str(FALLBACK_MAX_HISTORY_LOGS)
+        )
+        max_history_logs = save_max_hist_logs()
+
     # Create json to request history
     req_json = {
         "language": sets.language,
         "timezone": sets.timezone,
+        "result_limit": str(max_history_logs),
         "uuid": sets.uuid,
     }
     # Creating POST request to get history
