@@ -21,16 +21,6 @@ It is important to check the gpg -k *every time* the .git-gpg directory is
 updated (so an attacker couldn't sneak a key into the git repository and wait
 for it to be installed by accident).
 
-Refreshing gpg keys
--------------------
-
-It is recommended to periodically refresh these gpg keys to check if some of
-them was not revoked or so.
-
-Suitable cron job is:
-
-  13 13 * * * user GNUPGHOME=$HOME/.git-gpg gpg --refresh-keys
-
 Unsigned detector
 -----------------
 
@@ -45,32 +35,3 @@ Signed tip
 This script simply terminates successfully if the tip of the current branch is
 signed by a trusted key and fails if it is not. It is expected to be run before
 any code from any repository is used.
-
-gen-gpg
--------
-
-This is a maintainance script. It imports the keys and trust settings from
-files in this directory (trusted_keys.gpg and trust.txt) and creates the
-$HOME/.git-gpg.
-
-Adding a new key
-----------------
-
-On some desktop:
-
-  export GNUPGHOME=$HOME/.git-gpg
-  ./gen-gpg
-  gpg --recv-keys <THE_KEY> # Hopefully already signed by other trusted key.
-  gpg --export --armor >trusted_keys.gpg
-  # If the key wasn't trusted and should be, set trust by gpg --edit-key <THE_KEY> and then:
-  gpg --export-ownertrust >trust.txt
-  export GNUPGHOME=
-  git commit -a
-  git push
-
-On each and every of the build machines (as the user `beast`):
-
-  cd misc
-  git pull
-  git show # Check the git hash matches the one on the desktop
-  ./gen-gpg
