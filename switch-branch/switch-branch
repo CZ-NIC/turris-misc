@@ -3,19 +3,24 @@ set -e
 
 BRANCH=
 VERIFY=false
+FORCE=false
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help)
 			echo "Script for easier branch switching."
-			echo "Usage: switch-branch [BRANCH]"
+			echo "Usage: switch-branch [OPTION]... [BRANCH]"
 			echo
 			echo "Options:"
-			echo "  --verify  Verify and fix branch settings"
-			echo "  --help    Print this help text"
+			echo "  --verify Verify and fix branch settings"
+			echo "  --force  "
+			echo "  --help   Print this help text"
 			exit 0
 			;;
 		--verify)
 			VERIFY=true
+			;;
+		--force)
+			FORCE=true
 			;;
 		*)
 			BRANCH="$1"
@@ -46,19 +51,20 @@ get_branch() {
 	uci get updater.override.branch 2>/dev/null || echo "deploy"
 }
 
-# Checks if branch is supported
+# Checks if branch is supported (accept any branch if forced, otherwise only the
+# selected ones)
 check_branch() {
-	echo "$BRANCH" | grep -qE '^(deploy|rc|daily|nightly|test|master|stable|next|dev-.+)$'
+	$FORCE || echo "$BRANCH" | grep -qE '^(deploy|rc|prerc|daily|nightly|test)$'
 }
 
-# Get branch from uci in case of veryfication
-if $VERIFY; then
+# Get branch from uci in case of no branch is specified and veryfication
+if $VERIFY && [ -z "$BRANCH" ]; then
 	BRANCH="$(get_branch)"
 fi
 
 # Interactive selection of branch
 while [ -z "$BRANCH" ]; do
-	# Note: Not all branches are intentionally mentioned here as stable for example might be miss leading 
+	# Note: branch prerc is not here as it's mostly for internal use only
 cat <<EOF
 You are currently in: $(get_branch)
 
@@ -138,10 +144,14 @@ set +x
 # Print some info about new branch
 echo
 case "$BRANCH" in
-	test|dev-*)
-		echo "You are now in development branch. Unless you are developer you shouldn't use this branch!" >&2
-		echo "Turris team provides no guarantees and no support for this branch." >&2
-		echo "To return to deploy run this command: switch-branch deploy" >&2
+	deploy)
+		echo "You are now in the most stable branch." >&2
+		echo "With problems please contact Turris support (https://www.turris.cz/doc/en/howto/error_reporting)." >&2
+		;;
+	rc|prerc)
+		echo "You are now in branch containing next release candidate." >&2
+		echo "You can discuss problems on forum (https://forum.turris.cz)." >&2
+		echo "Please report unknown problems to support (https://www.turris.cz/doc/en/howto/error_reporting)." >&2
 		;;
 	nightly|daily)
 		# TODO split off daily when we have some support for it
@@ -151,13 +161,9 @@ case "$BRANCH" in
 		echo "You shouldn't be in this branch unless you are advanced user!" >&2
 		echo "To return to deploy run this command: switch-branch deploy" >&2
 		;;
-	rc)
-		echo "You are now in branch containing next release candidate." >&2
-		echo "You can discuss problems on forim (https://forum.turris.cz)." >&2
-		echo "Please report unknown problems to support (https://www.turris.cz/doc/en/howto/error_reporting)." >&2
-		;;
-	deploy)
-		echo "You are now in the most stable branch." >&2
-		echo "With problems please contact Turris support (https://www.turris.cz/doc/en/howto/error_reporting)." >&2
+	*) # test and any other branch
+		echo "You are now in development branch. Unless you are developer you shouldn't use this branch!" >&2
+		echo "Turris team provides no guarantees and no support for this branch." >&2
+		echo "To return to deploy run this command: switch-branch deploy" >&2
 		;;
 esac
