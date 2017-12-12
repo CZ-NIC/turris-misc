@@ -259,14 +259,19 @@ def measure_speed(sets):
         print(e)
         return ''
 
-    encryption = {True: "-e"}
+    encryption = {True: " -e "}
     print_progress("Starting speed test...")
-    test_result = subprocess.check_output([
-            RMBT_BIN, encryption.get(sets.test_server_encryption, ""), "-h",
-            sets.test_server_address, "-p", str(sets.test_server_port), "-t",
-            sets.test_token, "-f", sets.test_numthreads, "-d",
-            sets.test_duration, "-u", sets.test_duration, "-c",
-            sets.config_file])
+    test_result = subprocess.check_output(shlex.split(
+        RMBT_BIN +
+        encryption.get(sets.test_server_encryption, "") +
+        " -h " + sets.test_server_address +
+        " -p " + str(sets.test_server_port) +
+        " -t " + sets.test_token +
+        " -f " + sets.test_numthreads +
+        " -d " + sets.test_duration +
+        " -u " + sets.test_duration +
+        " -c " + sets.config_file
+    ))
     if print_debug("Speed test result:"):
         print(test_result)
     return json.loads(test_result.split("}")[1] + "}")
