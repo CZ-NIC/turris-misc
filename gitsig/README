@@ -21,14 +21,6 @@ It is important to check the gpg -k *every time* the .git-gpg directory is
 updated (so an attacker couldn't sneak a key into the git repository and wait
 for it to be installed by accident).
 
-Unsigned detector
------------------
-
-The `unsigned_detect.pl` tool is meant to be run periodically (for example
-after each push). It goes through the repository it is run in and reports any
-new commits from listed email addresses that are not signed by a trusted key.
-If any such commits are found, it signals this by terminating with exit code 1.
-
 Signed tip
 ----------
 
