@@ -82,7 +82,7 @@ add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/medkit/medki
 add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
 get_arch
 add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
-add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf"
+add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Debian" "Stretch" "armv7l" "`get_lxc_url debian/stretch/armhf`"
 add_image "Debian" "Buster" "armv7l" "`get_lxc_url debian/buster/armhf`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
