@@ -27,6 +27,9 @@ add_image() {
     elif expr "$FILE" : .*\\.tgz || expr "$FILE" : .*\\.tar.gz; then
         gzip -d "$FILE"
         FILE="`echo "$FILE" | sed -e 's|\.tgz$|.tar|' -e 's|\.tar\.gz$|.tar|'`"
+    elif expr "$FILE" : .*\\.tar.xz; then
+        mv "$FILE" rootfs.tar.xz
+        FILE=rootfs.tar.xz
     fi
     if [ "$FILE" \!= rootfs.tar.xz ]; then
         mv "$FILE" rootfs.tar
