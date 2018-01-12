@@ -1,4 +1,0 @@
-#!/bin/sh
-
-set -ex
-openssl ca -config config -gencrl -keyfile ca.key -cert ca.crt -out crl.pem
