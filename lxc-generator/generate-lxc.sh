@@ -82,7 +82,6 @@ get_arch() {
 
 add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest.tar.gz
 add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/medkit/medkit.tar.xz"
-add_image "Alpine" "3.4" "armv7l" "`get_lxc_url alpine/3.4/armhf`"
 get_arch
 add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
 add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
