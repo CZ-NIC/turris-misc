@@ -38,6 +38,8 @@ add_image() {
     echo "Distribution $1 version $2 was just installed into your container." > create-message
     echo "" >> create-message
     echo "Content of the tarballs is provided by third party, thus there is no warranty of any kind." >> create-message
+    echo "" >> create-message
+    echo "Do not use containers on internal flash, they can wear it down really fast!!!" >> create-message
     echo "lxc.arch = armv7l" > config
     expr `date +%s` + 1209600 > expiry
     tar -cJf meta.tar.xz create-message config expiry
