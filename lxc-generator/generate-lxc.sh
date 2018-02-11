@@ -82,6 +82,8 @@ get_arch() {
 
 add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest.tar.gz
 add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/medkit/medkit.tar.xz"
+add_image "Alpine" "3.6" "armv7l" "http://dl-cdn.alpinelinux.org/alpine/v3.6/releases/armhf/alpine-minirootfs-3.6.2-armhf.tar.gz"
+add_image "Alpine" "3.7" "armv7l" "http://dl-cdn.alpinelinux.org/alpine/v3.7/releases/armhf/alpine-minirootfs-3.7.0-armhf.tar.gz"
 get_arch
 add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
 add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
@@ -91,6 +93,7 @@ add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
 add_image "openSUSE" "42.2" "armv7l" "http://download.opensuse.org/repositories/home:/-miska-:/arm:/image/openSUSE_Leap_42.2/openSUSE-Leap42.2-ARM-JeOS-rootfs.armv7l.tbz"
 add_image "openSUSE" "42.3" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/leap/42.3/appliances/openSUSE-Leap42.3-ARM-JeOS.armv7-rootfs.armv7l.tbz"
 add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tbz"
+add_image "Sabayon" "16" "armv7l" "http://gd.tuwien.ac.at/linux/sabayonlinux/stable/Sabayon_Linux_16_armv7l.tar.bz2"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
 add_image "Ubuntu" "Artful" "armv7l" "`get_lxc_url ubuntu/artful/armhf`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
