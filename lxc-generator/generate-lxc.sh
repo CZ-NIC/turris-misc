@@ -35,9 +35,9 @@ add_image() {
         mv "$FILE" rootfs.tar
         xz rootfs.tar
     fi
-    echo "Distribution $1 version $2 was just installed into your container." > create-message
+    echo "Distribution $1 version $2 was just installed as a container." > create-message
     echo "" >> create-message
-    echo "Content of the tarballs is provided by third party, thus there is no warranty of any kind." >> create-message
+    echo "Content of the tarballs is provided by third party, thus there is no warranty of any kind nor support from Turris team." >> create-message
     echo "" >> create-message
     echo "Do not use containers on internal flash, they can wear it down really fast!!!" >> create-message
     echo "lxc.arch = armv7l" > config
