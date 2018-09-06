@@ -76,19 +76,12 @@ get_lxc_url() {
     echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
 }
 
-get_arch() {
-    wget http://os.archlinuxarm.org/os/ArchLinuxARM-mirabox-latest.tar.gz && \
-    gzip -d ArchLinuxARM-mirabox-latest.tar.gz && \
-    sed -i 's|/dev/sda1[[:blank:]]\([[:blank:]]*\)/boot\([[:blank:]]*\)vfat|#/dev/sda1\1/boot\2vfat|' ArchLinuxARM-mirabox-latest.tar
-}
-
 add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest.tar.gz
 add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/turris/medkit/medkit.tar.xz"
 add_image "Alpine" "3.7" "armv7l" "http://dl-cdn.alpinelinux.org/alpine/v3.7/releases/armhf/alpine-minirootfs-3.7.1-armhf.tar.gz"
 add_image "Alpine" "3.8" "armv7l" "http://dl-cdn.alpinelinux.org/alpine/v3.8/releases/armhf/alpine-minirootfs-3.8.1-armhf.tar.gz"
 add_image "Alpine" "Edge" "armv7l" "`get_lxc_url alpine/edge/armhf`"
-get_arch
-add_image "ArchLinux" "latest" "armv7l" "`pwd`/ArchLinuxARM-mirabox-latest.tar"
+add_image "ArchLinux" "latest" "armv7l" "http://os.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz"
 add_image "Debian" "Jessie" "armv7l" "`get_lxc_url debian/jessie/armhf`"
 add_image "Debian" "Stretch" "armv7l" "`get_lxc_url debian/stretch/armhf`"
 add_image "Debian" "Buster" "armv7l" "`get_lxc_url debian/buster/armhf`"
