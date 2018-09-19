@@ -101,7 +101,7 @@ add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
-    find . -type f -exec echo cat ~/gpg-pass \| gpg  --batch --no-tty --yes --passphrase-fd 0 -a --detach-sign \{\} \; | sh
+    find . -type f -exec gpg --batch --no-tty --yes --passphrase-file ~/gpg-pass --pinentry-mode loopback --armor --detach-sign \{\} \;
 else
     find . -type f -exec gpg -a --detach-sign \{\} \;
 fi
