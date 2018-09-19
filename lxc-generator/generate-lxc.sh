@@ -98,7 +98,6 @@ add_image "openSUSE" "15.0" "armv7l" "http://download.opensuse.org/ports/armv7hl
 add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.xz"
 add_image "Sabayon" "16" "armv7l" "http://mirror.dkm.cz/sabayon/stable/Sabayon_Linux_16_armv7l.tar.bz2"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
-add_image "Ubuntu" "Artful" "armv7l" "`get_lxc_url ubuntu/artful/armhf`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
 
 if [ "`gpg -K`" ]; then
