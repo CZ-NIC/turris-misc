@@ -93,6 +93,7 @@ add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/a
 add_image "Sabayon" "16" "armv7l" "http://mirror.dkm.cz/sabayon/stable/Sabayon_Linux_16_armv7l.tar.bz2"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
+add_image "Ubuntu" "Cosmic" "armv7l" "`get_lxc_url ubuntu/cosmic/armhf`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
