@@ -36,7 +36,7 @@ mkdir "$WORKDIR"
 trap "umount -fl '$WORKDIR' || true; rmdir '$WORKDIR' || true" EXIT INT QUIT TERM ABRT
 
 test -z "$(ls -A "$WORKDIR")"
-MMC="$(sed -n 's|\(/dev/mmcblk[01]p1\) / btrfs.*|\1|p')"
+MMC="$(sed -n 's|\(/dev/mmcblk[01]p1\) / btrfs.*|\1|p' /proc/mounts)"
 if [ -z "$MMC" ] && [ -b "$PARTITION" ]; then
 	mount -t jffs2 -o compr=none "$PARTITION" "$WORKDIR"
 else
