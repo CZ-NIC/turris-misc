@@ -74,7 +74,7 @@ get_linaro_url() {
 }
 
 get_lxc_url() {
-    echo http://images.linuxcontainers.org/images/$1/default/`wget -O - http://images.linuxcontainers.org/images/$1/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
+    echo https://images.linuxcontainers.org/images/$1/default/`wget -O - https://images.linuxcontainers.org/images/$1/default | sed -n 's|.*href="\./\(20[^/]*\)/.*|\1|p' | sort | tail -n 1`/rootfs.tar.xz
 }
 
 add_image "Turris_OS" "stable" "armv7l" https://repo.turris.cz/omnia/medkit/omnia-medkit-latest.tar.gz
@@ -93,11 +93,11 @@ add_image "Debian" "Stretch" "aarch64" "`get_lxc_url debian/stretch/arm64`"
 add_image "Debian" "Buster" "armv7l" "`get_lxc_url debian/buster/armhf`"
 add_image "Debian" "Buster" "aarch64" "`get_lxc_url debian/buster/arm64`"
 add_image "Gentoo" "stable" "armv7l" "`get_gentoo_url arm armv7a_hardfp`"
-add_image "openSUSE" "42.3" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/leap/42.3/appliances/openSUSE-Leap42.3-ARM-JeOS.armv7-rootfs.armv7l.tbz"
-add_image "openSUSE" "15.0" "armv7l" "http://download.opensuse.org/ports/armv7hl/distribution/leap/15.0/appliances/openSUSE-Leap15.0-ARM-JeOS.armv7-rootfs.armv7l-2018.07.02-Buildlp150.1.1.tar.xz"
-add_image "openSUSE" "15.0" "aarch64" "http://download.opensuse.org/ports/aarch64/distribution/leap/15.0/appliances/openSUSE-Leap15.0-ARM-JeOS.aarch64-rootfs.aarch64-2018.07.02-Buildlp150.1.1.tar.xz"
-add_image "openSUSE" "Tumbleweed" "armv7l" "http://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tar.xz"
-add_image "openSUSE" "Tumbleweed" "aarch64" "http://download.opensuse.org/ports/aarch64/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.aarch64-rootfs.aarch64-Current.tar.xz"
+add_image "openSUSE" "42.3" "armv7l" "https://download.opensuse.org/ports/armv7hl/distribution/leap/42.3/appliances/openSUSE-Leap42.3-ARM-JeOS.armv7-rootfs.armv7l.tbz"
+add_image "openSUSE" "15.0" "armv7l" "https://download.opensuse.org/ports/armv7hl/distribution/leap/15.0/appliances/openSUSE-Leap15.0-ARM-JeOS.armv7-rootfs.armv7l-2018.07.02-Buildlp150.1.1.tar.xz"
+add_image "openSUSE" "15.0" "aarch64" "https://download.opensuse.org/ports/aarch64/distribution/leap/15.0/appliances/openSUSE-Leap15.0-ARM-JeOS.aarch64-rootfs.aarch64-2018.07.02-Buildlp150.1.1.tar.xz"
+add_image "openSUSE" "Tumbleweed" "armv7l" "https://download.opensuse.org/ports/armv7hl/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.armv7-rootfs.armv7l-Current.tar.xz"
+add_image "openSUSE" "Tumbleweed" "aarch64" "https://download.opensuse.org/ports/aarch64/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.aarch64-rootfs.aarch64-Current.tar.xz"
 add_image "Sabayon" "16" "armv7l" "http://mirror.dkm.cz/sabayon/stable/Sabayon_Linux_16_armv7l.tar.bz2"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
