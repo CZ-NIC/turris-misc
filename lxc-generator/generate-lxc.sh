@@ -99,9 +99,11 @@ add_image "openSUSE" "Tumbleweed" "armv7l" "https://download.opensuse.org/ports/
 add_image "openSUSE" "Tumbleweed" "aarch64" "https://download.opensuse.org/ports/aarch64/tumbleweed/images/openSUSE-Tumbleweed-ARM-JeOS.aarch64-rootfs.aarch64-Current.tar.xz"
 add_image "Sabayon" "16" "armv7l" "http://mirror.dkm.cz/sabayon/stable/Sabayon_Linux_16_armv7l.tar.bz2"
 add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
+add_image "Ubuntu" "Xenial" "aarch64" "`get_lxc_url ubuntu/xenial/arm64`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
-add_image "Ubuntu" "Cosmic" "armv7l" "`get_lxc_url ubuntu/cosmic/armhf`"
-add_image "Ubuntu" "Cosmic" "aarch64" "`get_lxc_url ubuntu/cosmic/arm64`"
+add_image "Ubuntu" "Bionic" "aarch64" "`get_lxc_url ubuntu/bionic/arm64`"
+add_image "Ubuntu" "Disco" "armv7l" "`get_lxc_url ubuntu/disco/armhf`"
+add_image "Ubuntu" "Disco" "aarch64" "`get_lxc_url ubuntu/disco/arm64`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
