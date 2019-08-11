@@ -223,10 +223,10 @@ class Omnia:
 		self.sfplos = GPIO(self.sfplos_pin, 'in', edge='both')
 		self.sfpflt = GPIO(self.sfpflt_pin, 'in', edge='both')
 		self.sfpdis = GPIO(self.sfpdis_pin, 'out', edge=None, value=0)
-                if drive_led:
-    		        self.led = OmniaLED(self.wan_led)
-                else:
-                        self.led = LED(None)
+		if drive_led:
+			self.led = OmniaLED(self.wan_led)
+		else:
+			self.led = LED(None)
 
 	def set_nic_mode(self, mode):
 		l('Switching NIC mode to %s.' % mode)
