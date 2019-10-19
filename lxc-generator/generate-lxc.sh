@@ -101,8 +101,8 @@ add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
 add_image "Ubuntu" "Xenial" "aarch64" "`get_lxc_url ubuntu/xenial/arm64`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
 add_image "Ubuntu" "Bionic" "aarch64" "`get_lxc_url ubuntu/bionic/arm64`"
-add_image "Ubuntu" "Disco" "armv7l" "`get_lxc_url ubuntu/disco/armhf`"
-add_image "Ubuntu" "Disco" "aarch64" "`get_lxc_url ubuntu/disco/arm64`"
+add_image "Ubuntu" "Eoan" "armv7l" "`get_lxc_url ubuntu/eoan/armhf`"
+add_image "Ubuntu" "Eoan" "aarch64" "`get_lxc_url ubuntu/eoan/arm64`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
