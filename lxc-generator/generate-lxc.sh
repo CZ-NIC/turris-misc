@@ -85,10 +85,10 @@ get_opensuse_url() {
 
 add_image "Turris_OS" "stable" "armv7l" "https://repo.turris.cz/hbs/medkit/omnia-medkit-latest.tar.gz"
 add_image "Turris_OS" "stable" "ppc" "https://repo.turris.cz/hbs/medkit/turris1x-medkit-latest.tar.gz"
-add_image "Alpine" "3.9" "armv7l" "`get_lxc_url alpine/3.9/armhf`"
-add_image "Alpine" "3.9" "aarch64" "`get_lxc_url alpine/3.9/arm64`"
 add_image "Alpine" "3.10" "armv7l" "`get_lxc_url alpine/3.10/armhf`"
 add_image "Alpine" "3.10" "aarch64" "`get_lxc_url alpine/3.10/arm64`"
+add_image "Alpine" "3.11" "armv7l" "`get_lxc_url alpine/3.11/armhf`"
+add_image "Alpine" "3.11" "aarch64" "`get_lxc_url alpine/3.11/arm64`"
 add_image "Alpine" "Edge" "armv7l" "`get_lxc_url alpine/edge/armhf`"
 add_image "Alpine" "Edge" "aarch64" "`get_lxc_url alpine/edge/arm64`"
 add_image "ArchLinux" "latest" "armv7l" "http://os.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz"
