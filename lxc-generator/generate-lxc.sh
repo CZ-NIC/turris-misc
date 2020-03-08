@@ -78,7 +78,7 @@ get_lxc_url() {
 }
 
 get_opensuse_url() {
-    URL="`wget -O - "$1" | sed -n 's|.*href="\([^"]*JeOS[^"]*Current[^"]*.tar.xz\)".*|\1|p' | head -n 1`"
+    URL="`wget -O - "$1" | sed -n 's|.*href="\([^"]*JeOS[^"]*rootfs[^"]*.tar.xz\)".*|\1|p' | head -n 1`"
     [ -n "$URL" ] || URL="`wget -O - "$1" | sed -n 's|.*href="\([^"]*JeOS[^"]*Snapshot[^"]*.tar.xz\)".*|\1|p' | head -n 1`"
     echo "$1/$URL"
 }
