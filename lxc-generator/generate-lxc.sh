@@ -107,8 +107,8 @@ add_image "Ubuntu" "Xenial" "armv7l" "`get_lxc_url ubuntu/xenial/armhf`"
 add_image "Ubuntu" "Xenial" "aarch64" "`get_lxc_url ubuntu/xenial/arm64`"
 add_image "Ubuntu" "Bionic" "armv7l" "`get_lxc_url ubuntu/bionic/armhf`"
 add_image "Ubuntu" "Bionic" "aarch64" "`get_lxc_url ubuntu/bionic/arm64`"
-add_image "Ubuntu" "Eoan" "armv7l" "`get_lxc_url ubuntu/eoan/armhf`"
-add_image "Ubuntu" "Eoan" "aarch64" "`get_lxc_url ubuntu/eoan/arm64`"
+add_image "Ubuntu" "Focal" "armv7l" "`get_lxc_url ubuntu/focal/armhf`"
+add_image "Ubuntu" "Focal" "aarch64" "`get_lxc_url ubuntu/focal/arm64`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
