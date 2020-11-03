@@ -1,6 +1,0 @@
-#!/bin/sh
-
-set -ex
-cd /home/hpf
-psql -d turris -c "\copy (SELECT remote, 23, start_time FROM ssh_sessions WHERE start_time > CURRENT_TIMESTAMP AT TIME ZONE 'UTC' - INTERVAL '5 hours') TO honey.csv WITH CSV"
-./turris_to_hpfeeds.py
