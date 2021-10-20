@@ -1,5 +1,4 @@
 #!/bin/bash
-cd "$(dirname "$0")"
 mkdir -p meta/1.0
 rm -f meta/1.0/index-system*
 mkdir -p images
@@ -121,8 +120,8 @@ add_image "Ubuntu" "Impish" "aarch64" "`get_lxc_url ubuntu/impish/arm64`"
 
 if [ "`gpg -K`" ]; then
 if [ -f ~/gpg-pass ]; then
-    find meta images -type f -exec gpg --batch --no-tty --yes --passphrase-file ~/gpg-pass --pinentry-mode loopback --armor --detach-sign \{\} \;
+    find . -type f -exec gpg --batch --no-tty --yes --passphrase-file ~/gpg-pass --pinentry-mode loopback --armor --detach-sign \{\} \;
 else
-    find meta images -type f -exec gpg -a --detach-sign \{\} \;
+    find . -type f -exec gpg -a --detach-sign \{\} \;
 fi
 fi
